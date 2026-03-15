@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.presentation.documents.model.ResultsEvent
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

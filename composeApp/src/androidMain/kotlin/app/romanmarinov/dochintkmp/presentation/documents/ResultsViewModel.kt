@@ -1,5 +1,7 @@
 package app.romanmarinov.dochintkmp.presentation.documents
 
+import app.romanmarinov.dochintkmp.presentation.documents.model.ResultsEvent
+import app.romanmarinov.dochintkmp.presentation.documents.model.ResultsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.romanmarinov.dochintkmp.domain.usecase.ClearResultsUseCase

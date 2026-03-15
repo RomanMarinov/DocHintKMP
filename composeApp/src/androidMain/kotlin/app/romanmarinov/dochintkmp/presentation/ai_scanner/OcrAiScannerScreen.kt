@@ -62,6 +62,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiContentState
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiScannerEffect
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiScannerEvent
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.koin.androidx.compose.koinViewModel

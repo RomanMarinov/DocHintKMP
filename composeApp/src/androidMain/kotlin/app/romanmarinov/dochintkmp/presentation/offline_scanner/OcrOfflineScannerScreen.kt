@@ -66,6 +66,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.domain.model.FileType
 import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineContentState
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerEffect
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerEvent
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.koin.androidx.compose.koinViewModel

@@ -26,7 +26,7 @@ import app.romanmarinov.dochintkmp.presentation.documents.ResultsViewModel
 import app.romanmarinov.dochintkmp.presentation.offline_scanner.OcrOfflineScannerViewModel
 import app.romanmarinov.dochintkmp.presentation.settings.SettingsViewModel
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val dataModule = module {

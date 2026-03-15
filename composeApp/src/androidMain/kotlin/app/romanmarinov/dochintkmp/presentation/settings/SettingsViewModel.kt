@@ -1,5 +1,8 @@
 package app.romanmarinov.dochintkmp.presentation.settings
 
+import app.romanmarinov.dochintkmp.presentation.settings.model.SettingsEffect
+import app.romanmarinov.dochintkmp.presentation.settings.model.SettingsEvent
+import app.romanmarinov.dochintkmp.presentation.settings.model.SettingsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.romanmarinov.dochintkmp.data.local.SecureStorage

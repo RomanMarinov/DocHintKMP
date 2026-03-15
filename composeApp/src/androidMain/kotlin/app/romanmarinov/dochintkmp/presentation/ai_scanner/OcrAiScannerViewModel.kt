@@ -1,5 +1,10 @@
 package app.romanmarinov.dochintkmp.presentation.ai_scanner
 
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiContentState
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiErrorType
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiScannerEffect
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiScannerEvent
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiScannerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.romanmarinov.dochintkmp.data.local.SecureStorage

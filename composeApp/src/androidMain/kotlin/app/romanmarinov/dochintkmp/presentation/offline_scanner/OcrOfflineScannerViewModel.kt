@@ -1,5 +1,10 @@
 package app.romanmarinov.dochintkmp.presentation.offline_scanner
 
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineContentState
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineErrorType
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerEffect
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerEvent
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.romanmarinov.dochintkmp.data.ocr.PdfPageRenderer
@@ -17,6 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import android.net.Uri
 import android.util.Log
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineToastType
 
 class OcrOfflineScannerViewModel(
     private val extractTextOffline: ExtractTextOfflineUseCase,
