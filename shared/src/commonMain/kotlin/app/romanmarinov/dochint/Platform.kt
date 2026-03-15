@@ -1,7 +1,0 @@
-package app.romanmarinov.dochint
-
-interface Platform {
-    val name: String
-}
-
-expect fun getPlatform(): Platform

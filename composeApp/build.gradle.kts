@@ -16,10 +16,6 @@ kotlin {
     }
     
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.activity.compose)
-        }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -31,6 +27,16 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(projects.shared)
         }
+        androidMain.dependencies {
+            implementation(libs.compose.uiToolingPreview)
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.navigation.compose)
+            implementation(libs.koin.android)
+            implementation(libs.koin.androidx.compose)
+            implementation(libs.coil.compose)
+            implementation(libs.androidx.compose.material.icons.extended)
+            implementation(libs.ktor.client.core)
+        }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -38,11 +44,11 @@ kotlin {
 }
 
 android {
-    namespace = "app.romanmarinov.dochint"
+    namespace = "app.romanmarinov.dochintkmp"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "app.romanmarinov.dochint"
+        applicationId = "app.romanmarinov.dochintkmp"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1

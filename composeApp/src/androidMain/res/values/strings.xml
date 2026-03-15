@@ -1,3 +1,84 @@
 <resources>
     <string name="app_name">DocHint</string>
+
+    <string name="select_image">Выберите изображение</string>
+    <string name="select_file">Выберите документ</string>
+    <string name="supported_formats">JPG, PNG, PDF, TXT, DOCX</string>
+    <string name="file_type_pdf">PDF документ</string>
+    <string name="file_type_jpeg">JPEG изображение</string>
+    <string name="file_type_png">PNG изображение</string>
+    <string name="file_type_txt">TXT файл</string>
+    <string name="file_type_docx">Word документ</string>
+    <string name="processing">Обработка…</string>
+    <string name="data_extracted">Данные извлечены</string>
+    <string name="indicators_count">Показатели (%1$d)</string>
+    <string name="label_document_type">Тип документа</string>
+    <string name="label_institution">Учреждение</string>
+    <string name="label_doctor">Врач</string>
+    <string name="label_analysis_date">Дата анализа</string>
+    <string name="pipeline_ocr">OCR распознавание</string>
+    <string name="pipeline_text_cleanup">Очистка текста</string>
+    <string name="content_desc_document_preview">Превью документа</string>
+    <string name="content_desc_remove">Убрать</string>
+
+    <string name="screen_ai_scanner">AI Сканер</string>
+    <string name="add_api_key_hint">Добавьте API ключ в Настройках</string>
+    <string name="error_select_image">Выберите изображение</string>
+    <string name="error_save_api_key">Сохраните API ключ в Настройках</string>
+    <string name="error_duplicate_document_ai">Этот документ уже был загружен ранее. Запрос к LLM не отправлен.</string>
+    <string name="error_no_network">Нет подключения к сети</string>
+    <string name="error_unknown">Неизвестная ошибка</string>
+    <string name="toast_added_to_documents">Добавлено в документы</string>
+    <string name="recognize_document">Распознать документ</string>
+    <string name="view_result">Посмотреть результат</string>
+    <string name="save_result">Сохранить результат</string>
+    <string name="adding_document_save">Сохранить</string>
+    <string name="pipeline_detect_type">Определение типа анализа</string>
+    <string name="pipeline_extract_llm">Извлечение показателей (LLM)</string>
+    <string name="token_stats_format">%1$d + %2$d = %3$d токенов</string>
+
+    <string name="screen_offline">Оффлайн сканер</string>
+    <string name="error_select_file">Выберите файл</string>
+    <string name="error_duplicate_document_offline">Этот документ уже был загружен ранее.</string>
+    <string name="recognize_offline">Извлечь данные</string>
+    <string name="data_extracted_offline">Данные извлечены</string>
+    <string name="offline_instructions">Прикрепите PDF или фото анализа крови (ОАК, биохимия)</string>
+    <string name="pipeline_extract_rules">Извлечение по правилам</string>
+
+    <string name="screen_documents">Документы</string>
+    <string name="no_saved_analyses">Нет сохранённых анализов</string>
+    <plurals name="results_count">
+        <item quantity="one">%d анализ</item>
+        <item quantity="few">%d анализа</item>
+        <item quantity="many">%d анализов</item>
+        <item quantity="other">%d анализов</item>
+    </plurals>
+    <string name="all_clear_data">Очистить</string>
+    <string name="empty_title">Пока пусто</string>
+    <string name="empty_subtitle">Перейдите во вкладку Сканер,\nчтобы загрузить анализ крови</string>
+    <string name="analysis_default">Анализ</string>
+    <string name="indicators_short_format">%1$d показат.</string>
+    <string name="content_desc_delete">Удалить</string>
+    <string name="dialog_delete_title">Удалить документ?</string>
+    <string name="dialog_delete_message">Анализ будет удалён из списка документов.</string>
+    <string name="dialog_clear_title">Очистить все документы?</string>
+    <string name="dialog_clear_message">Все сохранённые анализы будут удалены.</string>
+    <string name="dialog_confirm">Удалить</string>
+    <string name="dialog_cancel">Отмена</string>
+
+    <string name="screen_settings">Настройки</string>
+    <string name="settings_subtitle">API ключ и мониторинг</string>
+    <string name="section_api_key">API ключ</string>
+    <string name="key_saved">Ключ сохранён</string>
+    <string name="delete">Удалить</string>
+    <string name="api_key_label">OpenRouter API Key</string>
+    <string name="api_key_placeholder">sk-or-v1-…</string>
+    <string name="save_key">Сохранить ключ</string>
+    <string name="key_status">Статус ключа</string>
+    <string name="content_desc_refresh">Обновить</string>
+    <string name="tariff_label">Тариф</string>
+    <string name="tariff_free">Free</string>
+    <string name="tariff_paid">Paid</string>
+    <string name="spent_label">Потрачено</string>
+    <string name="spent_format">$%1$s</string>
 </resources>
