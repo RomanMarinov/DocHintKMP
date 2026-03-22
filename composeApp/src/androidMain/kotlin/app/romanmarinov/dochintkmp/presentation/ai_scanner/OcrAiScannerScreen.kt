@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,7 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.MedicalServices
@@ -64,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.domain.model.FileType
+import app.romanmarinov.dochintkmp.domain.model.MedicalData
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
 import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiContentState
 import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiErrorType
@@ -245,50 +247,7 @@ fun OcrAiScannerScreen(
                 val isSuccess = uiState.contentState is OcrAiContentState.Success
                 if (isSuccess) {
                     val successData = (uiState.contentState as OcrAiContentState.Success).data
-                    var resultExpanded by remember { mutableStateOf(false) }
-                    val arrowRotation by animateFloatAsState(
-                        targetValue = if (resultExpanded) 180f else 0f,
-                        animationSpec = tween(300),
-                        label = "arrow"
-                    )
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(52.dp)
-                                    .clickable { resultExpanded = !resultExpanded }
-                                    .padding(horizontal = 16.dp)
-                            ) {
-                                Text(
-                                    stringResource(R.string.view_result),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    modifier = Modifier.align(Alignment.Center)
-                                )
-                                Icon(
-                                    imageVector = Icons.Default.ExpandMore,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterEnd)
-                                        .rotate(arrowRotation)
-                                )
-                            }
-                            AnimatedVisibility(
-                                visible = resultExpanded,
-                                enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
-                                exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut()
-                            ) {
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                    SuccessCard(result = successData, inDropdown = true)
-                                }
-                            }
-                        }
-                    }
+                    AiSuccessCard(result = successData)
                 } else {
                     Button(
                         onClick = { viewModel.onEvent(OcrAiScannerEvent.ProcessImage) },
@@ -301,8 +260,6 @@ fun OcrAiScannerScreen(
                         if (uiState.contentState is OcrAiContentState.Loading) {
                             Text(stringResource(R.string.processing), style = MaterialTheme.typography.labelLarge)
                         } else {
-                            Icon(Icons.Outlined.MedicalServices, null, Modifier.size(20.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
                             Text(stringResource(R.string.recognize_document), style = MaterialTheme.typography.labelLarge)
                         }
                     }
@@ -361,40 +318,81 @@ private fun PipelineStep(label: String, done: Boolean) {
 }
 
 @Composable
-private fun SuccessCard(result: ParseResult, inDropdown: Boolean = false) {
-    if (inDropdown) {
-        Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
-            SuccessCardContent(result = result, padding = 16.dp)
-        }
-    } else {
-        ElevatedCard(shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
-            SuccessCardContent(result = result, padding = 20.dp)
+private fun AiSuccessCard(result: ParseResult) {
+    val data = result.data
+    var expanded by remember { mutableStateOf(false) }
+    val arrowRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = tween(300),
+        label = "arrow"
+    )
+
+    ElevatedCard(
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { expanded = !expanded }
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = stringResource(R.string.view_result),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .rotate(arrowRotation)
+                )
+            }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                AiSuccessCardContent(data = data, result = result)
+            }
         }
     }
 }
 
 @Composable
-private fun SuccessCardContent(result: ParseResult, padding: androidx.compose.ui.unit.Dp) {
-    val data = result.data
-    Column(modifier = Modifier.fillMaxWidth().padding(padding)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(32.dp)) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                }
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(stringResource(R.string.data_extracted), style = MaterialTheme.typography.titleMedium)
-        }
-
+private fun AiSuccessCardContent(data: MedicalData, result: ParseResult) {
+    Column {
         Spacer(modifier = Modifier.height(12.dp))
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -405,9 +403,8 @@ private fun SuccessCardContent(result: ParseResult, padding: androidx.compose.ui
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     data.documentType ?: "—",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -436,11 +433,21 @@ private fun SuccessCardContent(result: ParseResult, padding: androidx.compose.ui
                     Spacer(modifier = Modifier.height(8.dp))
                     indicators.forEach { ind ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 3.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(ind.name, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-                            Text(ind.value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                            Text(
+                                ind.name,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                ind.value,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium
+                            )
                             ind.referenceRange?.let {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)

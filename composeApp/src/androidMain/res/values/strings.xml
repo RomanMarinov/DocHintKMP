@@ -29,7 +29,7 @@
     <string name="error_no_network">Нет подключения к сети</string>
     <string name="error_unknown">Неизвестная ошибка</string>
     <string name="toast_added_to_documents">Добавлено в документы</string>
-    <string name="recognize_document">Распознать документ</string>
+    <string name="recognize_document">Извлечь данные</string>
     <string name="view_result">Посмотреть результат</string>
     <string name="save_result">Сохранить результат</string>
     <string name="adding_document_save">Сохранить</string>
