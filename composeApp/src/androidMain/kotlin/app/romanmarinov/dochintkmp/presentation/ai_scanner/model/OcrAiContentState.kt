@@ -6,5 +6,5 @@ sealed interface OcrAiContentState {
     data object Idle : OcrAiContentState
     data object Loading : OcrAiContentState
     data class Success(val data: ParseResult) : OcrAiContentState
-    data class Error(val type: OcrAiErrorType) : OcrAiContentState
+    data class Error(val type: OcrAiErrorType, val detailMessage: String? = null) : OcrAiContentState
 }

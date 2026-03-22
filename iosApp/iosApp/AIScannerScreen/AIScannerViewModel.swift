@@ -1,11 +1,13 @@
 import SwiftUI
-import PhotosUI
+import UniformTypeIdentifiers
 import Vision
+import PDFKit
 import Shared
 
 @MainActor
 final class AIScannerViewModel: ObservableObject {
     @Published var selectedImage: UIImage?
+    @Published var selectedURL: URL?
     @Published var contentState: AIContentState = .idle
     @Published var hasSavedKey = false
     @Published var toastMessage: String?
@@ -13,6 +15,10 @@ final class AIScannerViewModel: ObservableObject {
     private let keychain = KeychainStorage()
     private let openRouter = OpenRouterService()
     private let aiController = AIScannerController()
+
+    var supportedTypes: [UTType] {
+        [.image, .jpeg, .png, .pdf]
+    }
 
     enum AIContentState {
         case idle
@@ -29,20 +35,40 @@ final class AIScannerViewModel: ObservableObject {
         hasSavedKey = !keychain.apiKey.isEmpty
     }
 
-    func loadImage(from item: PhotosPickerItem?) async {
-        guard let item else {
-            selectedImage = nil
+    func handleFilePick(result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            _ = url.startAccessingSecurityScopedResource()
+            selectedURL = url
+            let ext = url.pathExtension.lowercased()
+            if ext == "pdf" {
+                selectedImage = loadPdfPreview(from: url)
+            } else {
+                selectedImage = UIImage(contentsOfFile: url.path)
+                    ?? (try? Data(contentsOf: url)).flatMap { UIImage(data: $0) }
+            }
             contentState = .idle
-            return
+        case .failure:
+            toastMessage = strings.errorUnknown
         }
-        if let data = try? await item.loadTransferable(type: Data.self),
-           let img = UIImage(data: data) {
-            selectedImage = img
-            contentState = .idle
+    }
+
+    private func loadPdfPreview(from url: URL) -> UIImage? {
+        guard let doc = PDFDocument(url: url),
+              let page = doc.page(at: 0) else { return nil }
+        let rect = page.bounds(for: .mediaBox)
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: rect.width, height: rect.height))
+        return renderer.image { ctx in
+            ctx.cgContext.translateBy(x: 0, y: rect.height)
+            ctx.cgContext.scaleBy(x: 1, y: -1)
+            page.draw(with: .mediaBox, to: ctx.cgContext)
         }
     }
 
     func resetState() {
+        selectedURL?.stopAccessingSecurityScopedResource()
+        selectedURL = nil
         selectedImage = nil
         contentState = .idle
     }
@@ -62,7 +88,12 @@ final class AIScannerViewModel: ObservableObject {
         defer { }
 
         do {
-            let cleanText = try extractText(from: img)
+            let cleanText: String
+            if let url = selectedURL, url.pathExtension.lowercased() == "pdf" {
+                cleanText = OfflineScannerTextExtractor.extract(from: url, fileType: .pdf) ?? ""
+            } else {
+                cleanText = try extractText(from: img)
+            }
             if cleanText.isEmpty {
                 contentState = .error(strings.errorUnknown)
                 return
@@ -77,7 +108,7 @@ final class AIScannerViewModel: ObservableObject {
             contentState = .success(result)
 
             let domainData = toDomainMedicalData(result)
-            aiController.saveDocument(data: domainData)
+            aiController.saveDocument(data: domainData, processedText: cleanText)
             showToast(strings.toastAddedToDocuments)
         } catch let e as OpenRouterService.AIError {
             switch e {

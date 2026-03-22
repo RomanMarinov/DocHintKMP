@@ -315,13 +315,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "JPG, PNG"
+            "value" : "JPG, PNG, PDF"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "JPG, PNG"
+            "value" : "JPG, PNG, PDF"
           }
         }
       }

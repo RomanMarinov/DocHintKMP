@@ -72,7 +72,7 @@ val domainModule = module {
 }
 
 val viewModelModule = module {
-    viewModel { OcrAiScannerViewModel(get(), get(), get(), get(), get()) }
+    viewModel { OcrAiScannerViewModel(get(), get<ExtractTextOfflineUseCase>(), get(), get(), get(), get(), get()) }
     viewModel { ResultsViewModel(get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get()) }
     viewModel {

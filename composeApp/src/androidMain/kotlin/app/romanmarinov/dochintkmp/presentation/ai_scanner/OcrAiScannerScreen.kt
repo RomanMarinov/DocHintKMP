@@ -32,7 +32,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.MedicalServices
+import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalIconButton
@@ -53,12 +55,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
+import app.romanmarinov.dochintkmp.domain.model.FileType
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
 import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiContentState
 import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiErrorType
@@ -87,10 +92,20 @@ fun OcrAiScannerScreen(
         }
     }
 
-    val pickImageLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
+    val pickFileLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { viewModel.onEvent(OcrAiScannerEvent.SelectImage(it)) }
+        uri?.let {
+            val mime = context.contentResolver.getType(it) ?: ""
+            val fileType = when {
+                mime.startsWith("image/") -> if (mime == "image/png") FileType.PNG else FileType.IMAGE
+                mime == "application/pdf" -> FileType.PDF
+                mime == "text/plain" -> FileType.TXT
+                mime == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" -> FileType.DOCX
+                else -> FileType.IMAGE
+            }
+            viewModel.onEvent(OcrAiScannerEvent.SelectFile(it, fileType))
+        }
     }
 
     Column(
@@ -128,7 +143,16 @@ fun OcrAiScannerScreen(
 
             if (uiState.selectedUri == null) {
                 OutlinedCard(
-                    onClick = { pickImageLauncher.launch("image/*") },
+                    onClick = {
+                        pickFileLauncher.launch(
+                            arrayOf(
+                                "image/*", "image/jpeg", "image/png",
+                                "application/pdf",
+                                "text/plain",
+                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            )
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -173,18 +197,37 @@ fun OcrAiScannerScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Box {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data(uiState.selectedUri)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = stringResource(R.string.content_desc_document_preview),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(220.dp)
-                                .clip(RoundedCornerShape(16.dp)),
-                            contentScale = ContentScale.Crop
-                        )
+                        when {
+                            uiState.selectedFileType == FileType.IMAGE || uiState.selectedFileType == FileType.PNG -> {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(uiState.selectedUri)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = stringResource(R.string.content_desc_document_preview),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(220.dp)
+                                        .clip(RoundedCornerShape(16.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            uiState.selectedFileType == FileType.PDF && uiState.pdfPreviewBitmap != null -> {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(uiState.pdfPreviewBitmap)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = stringResource(R.string.content_desc_document_preview),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(220.dp)
+                                        .clip(RoundedCornerShape(16.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            else -> AiFileTypePreview(uiState.selectedFileType)
+                        }
                         FilledTonalIconButton(
                             onClick = { viewModel.onEvent(OcrAiScannerEvent.ResetState) },
                             modifier = Modifier
@@ -275,7 +318,7 @@ fun OcrAiScannerScreen(
             ) {
                 when (val s = uiState.contentState) {
                     is OcrAiContentState.Loading -> LoadingCard()
-                    is OcrAiContentState.Error -> ErrorCard(errorType = s.type)
+                    is OcrAiContentState.Error -> ErrorCard(errorType = s.type, detailMessage = s.detailMessage)
                     else -> {}
                 }
             }
@@ -420,7 +463,9 @@ private fun SuccessCardContent(result: ParseResult, padding: androidx.compose.ui
 }
 
 @Composable
-private fun ErrorCard(errorType: OcrAiErrorType) {
+private fun ErrorCard(errorType: OcrAiErrorType, detailMessage: String? = null) {
+    val displayText = detailMessage?.takeIf { it.isNotBlank() }
+        ?: stringResource(errorType.stringResId)
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.errorContainer,
@@ -430,7 +475,7 @@ private fun ErrorCard(errorType: OcrAiErrorType) {
             Icon(Icons.Default.ErrorOutline, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                stringResource(errorType.stringResId),
+                displayText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
@@ -444,5 +489,36 @@ private fun DataField(label: String, value: String?) {
     Row(modifier = Modifier.padding(vertical = 4.dp)) {
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(110.dp))
         Text(value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun AiFileTypePreview(fileType: FileType) {
+    val (icon: ImageVector, label: String) = when (fileType) {
+        FileType.PDF -> Icons.Outlined.PictureAsPdf to stringResource(R.string.file_type_pdf)
+        FileType.TXT -> Icons.Outlined.Description to stringResource(R.string.file_type_txt)
+        FileType.DOCX -> Icons.Outlined.Description to stringResource(R.string.file_type_docx)
+        FileType.IMAGE -> Icons.Outlined.Description to stringResource(R.string.file_type_jpeg)
+        FileType.PNG -> Icons.Outlined.Description to stringResource(R.string.file_type_png)
+    }
+    val iconTint = when (fileType) {
+        FileType.PDF -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.tertiary
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(220.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(icon, contentDescription = null, Modifier.size(48.dp), tint = iconTint)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                label,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

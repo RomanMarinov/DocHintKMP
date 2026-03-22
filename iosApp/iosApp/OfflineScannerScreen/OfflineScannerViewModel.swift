@@ -71,8 +71,8 @@ final class OfflineScannerViewModel: ObservableObject {
 
         let result = controller.processText(rawText: text)
 
-        if let data = result.data {
-            contentState = .success(data)
+        if let data = result.data, let processedText = result.processedText {
+            contentState = .success(data, processedText: processedText)
         } else if let errorType = result.errorType {
             let msg: String
             switch errorType {
@@ -89,8 +89,8 @@ final class OfflineScannerViewModel: ObservableObject {
         }
     }
 
-    func saveDocument(data: DomainMedicalData) {
-        controller.saveDocument(data: data)
+    func saveDocument(data: DomainMedicalData, processedText: String) {
+        controller.saveDocument(data: data, processedText: processedText)
         toastMessage = strings.toastAddedToDocuments
         resetState()
     }

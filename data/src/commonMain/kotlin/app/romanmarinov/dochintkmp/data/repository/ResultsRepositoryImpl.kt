@@ -15,11 +15,11 @@ class ResultsRepositoryImpl : ResultsRepository {
     private val processedTextHashes = mutableSetOf<Int>()
 
     override fun isTextAlreadyProcessed(cleanText: String): Boolean {
-        val normalized = cleanText
-            .lowercase()
-            .replace(Regex("\\s+"), "")
-            .replace(Regex("[^а-яa-z0-9.,]"), "")
-        return !processedTextHashes.add(normalized.hashCode())
+        return processedTextHashes.contains(normalizeForHash(cleanText))
+    }
+
+    override fun markTextAsProcessed(cleanText: String) {
+        processedTextHashes.add(normalizeForHash(cleanText))
     }
 
     override fun addResult(data: MedicalData) {
@@ -35,6 +35,14 @@ class ResultsRepositoryImpl : ResultsRepository {
     override fun clearResults() {
         _results.value = emptyList()
         processedTextHashes.clear()
+    }
+
+    private fun normalizeForHash(cleanText: String): Int {
+        val normalized = cleanText
+            .lowercase()
+            .replace(Regex("\\s+"), "")
+            .replace(Regex("[^а-яa-z0-9.,]"), "")
+        return normalized.hashCode()
     }
 }
 

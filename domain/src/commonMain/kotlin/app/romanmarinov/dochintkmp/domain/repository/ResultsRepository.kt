@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface ResultsRepository {
     val results: StateFlow<List<MedicalData>>
     fun isTextAlreadyProcessed(cleanText: String): Boolean
+    fun markTextAsProcessed(cleanText: String)
     fun addResult(data: MedicalData)
     fun removeAt(index: Int)
     fun clearResults()

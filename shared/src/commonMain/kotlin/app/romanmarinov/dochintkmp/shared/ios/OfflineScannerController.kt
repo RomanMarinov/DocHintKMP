@@ -43,7 +43,7 @@ class OfflineScannerController : KoinComponent {
 
         return try {
             val data = ruleParser.parse(cleanText)
-            ProcessResult(data = data)
+            ProcessResult(data = data, processedText = cleanText)
         } catch (e: Exception) {
             ProcessResult(errorType = ErrorType.PARSE_FAILED)
         }
@@ -52,12 +52,13 @@ class OfflineScannerController : KoinComponent {
     /**
      * Save parsed medical data to documents list.
      */
-    fun saveDocument(data: MedicalData) {
-        addResultUseCase(data)
+    fun saveDocument(data: MedicalData, processedText: String) {
+        addResultUseCase(data, processedText)
     }
 
     data class ProcessResult(
         val data: MedicalData? = null,
+        val processedText: String? = null,
         val errorType: ErrorType? = null
     )
 

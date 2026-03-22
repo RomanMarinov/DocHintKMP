@@ -10,6 +10,7 @@ actual fun createOpenRouterHttpClient(): HttpClient = HttpClient(Darwin) {
         json(kotlinx.serialization.json.Json {
             ignoreUnknownKeys = true
             isLenient = true
+            encodeDefaults = true
         })
     }
 }

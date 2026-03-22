@@ -17,7 +17,7 @@ class AIScannerController : KoinComponent {
 
     fun checkDuplicate(cleanText: String): Boolean = checkDuplicateUseCase(cleanText)
 
-    fun saveDocument(data: MedicalData) {
-        addResultUseCase(data)
+    fun saveDocument(data: MedicalData, processedText: String) {
+        addResultUseCase(data, processedText)
     }
 }

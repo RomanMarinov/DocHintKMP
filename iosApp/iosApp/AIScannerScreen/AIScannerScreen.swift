@@ -1,11 +1,10 @@
 import SwiftUI
-import PhotosUI
 
 /// AI Scanner screen — design matches Android OcrAiScannerScreen.
 struct AIScannerScreen: View {
     @StateObject private var viewModel = AIScannerViewModel()
-    @State private var selectedItem: PhotosPickerItem?
     @State private var resultExpanded = false
+    @State private var showFilePicker = false
     private let strings = AIScannerStrings()
 
     var body: some View {
@@ -17,7 +16,13 @@ struct AIScannerScreen: View {
         }
         .background(Color(.systemGroupedBackground))
         .onAppear { viewModel.refreshKey() }
-        .task(id: selectedItem) { await viewModel.loadImage(from: selectedItem) }
+        .fileImporter(
+            isPresented: $showFilePicker,
+            allowedContentTypes: viewModel.supportedTypes,
+            allowsMultipleSelection: false
+        ) { result in
+            viewModel.handleFilePick(result: result)
+        }
         .overlay { toastOverlay }
     }
 
@@ -62,9 +67,9 @@ struct AIScannerScreen: View {
     }
 
     private var selectImageCard: some View {
-        PhotosPicker(selection: $selectedItem, matching: .images) {
+        Button(action: { showFilePicker = true }) {
             VStack(spacing: 12) {
-                Image(systemName: "photo.badge.plus")
+                Image(systemName: "doc.badge.plus")
                     .font(.system(size: 40))
                     .foregroundStyle(Color.accentColor)
                 Text(strings.selectImage)

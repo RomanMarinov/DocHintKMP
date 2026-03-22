@@ -90,7 +90,7 @@ class OcrOfflineScannerViewModel(
                     return@launch
                 }
                 val data = ruleParser.parse(cleanText)
-                _uiState.update { it.copy(contentState = OcrOfflineContentState.Success(data)) }
+                _uiState.update { it.copy(contentState = OcrOfflineContentState.Success(data, cleanText)) }
             } catch (e: Exception) {
                 Log.e("OcrOfflineScanner", "processFile", e)
                 _uiState.update { it.copy(contentState = OcrOfflineContentState.Error(OcrOfflineErrorType.UNKNOWN)) }
@@ -99,9 +99,9 @@ class OcrOfflineScannerViewModel(
     }
 
     private fun saveDocument() {
-        val data = (_uiState.value.contentState as? OcrOfflineContentState.Success)?.data ?: return
+        val success = _uiState.value.contentState as? OcrOfflineContentState.Success ?: return
         viewModelScope.launch {
-            addResult(data)
+            addResult(success.data, success.processedText)
             _uiState.update { it.copy(toastType = OcrOfflineToastType.ADDED_TO_DOCUMENTS) }
             resetState()
         }

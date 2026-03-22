@@ -107,9 +107,9 @@ struct OfflineScannerScreen: View {
                 OfflineLoadingView()
             }
 
-            if case .success(let data) = viewModel.contentState {
+            if case .success(let data, let processedText) = viewModel.contentState {
                 ExpandableResultCard(data: data)
-                Button(action: { viewModel.saveDocument(data: data) }) {
+                Button(action: { viewModel.saveDocument(data: data, processedText: processedText) }) {
                     Text(strings.saveToDocuments)
                         .fontWeight(.semibold)
                         .frame(height: 44)
