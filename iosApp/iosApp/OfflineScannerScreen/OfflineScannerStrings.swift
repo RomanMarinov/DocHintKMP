@@ -6,9 +6,11 @@ struct OfflineScannerStrings {
     var supportedFormats: String { String(localized: "offline_supported_formats") }
     var instructions: String { String(localized: "offline_instructions") }
     var recognize: String { String(localized: "offline_recognize") }
+    var processing: String { String(localized: "ai_processing") }
     var saveToDocuments: String { String(localized: "offline_save_to_documents") }
     var loadingOcr: String { String(localized: "offline_loading_ocr") }
     var loadingCleanup: String { String(localized: "offline_loading_cleanup") }
+    var pipelineExtract: String { String(localized: "offline_pipeline_extract") }
     var viewResult: String { String(localized: "offline_view_result") }
     var labelDocumentType: String { String(localized: "label_document_type") }
     var labelInstitution: String { String(localized: "label_institution") }

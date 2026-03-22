@@ -129,7 +129,7 @@ struct SettingsScreen: View {
                 viewModel.loadKeyInfo()
             }
         }
-        .overlay {
+        .overlay(alignment: .bottom) {
             if let msg = viewModel.toastMessage {
                 SettingsToastView(message: msg)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -213,13 +213,29 @@ struct SettingsToastView: View {
     let message: String
 
     var body: some View {
-        Text(message)
-            .font(.subheadline)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(.ultraThinMaterial)
-            .clipShape(Capsule())
-            .padding(.bottom, 32)
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Color.accentColor)
+            Text(message)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(Color.primary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.systemGray6).opacity(0.98))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(.systemGray4), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.15), radius: 12, y: 4)
+        )
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, 40)
     }
 }
 

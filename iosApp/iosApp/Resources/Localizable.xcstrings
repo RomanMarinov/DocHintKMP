@@ -935,6 +935,22 @@
         }
       }
     },
+    "offline_pipeline_extract" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extract by rules"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Извлечение по правилам"
+          }
+        }
+      }
+    },
     "offline_recognize" : {
       "localizations" : {
         "en" : {

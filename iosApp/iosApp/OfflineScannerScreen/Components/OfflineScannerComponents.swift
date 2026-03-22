@@ -1,53 +1,93 @@
 import SwiftUI
 import Shared
 
+// MARK: - Close Button (unified across all screens)
+
+struct CloseButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "xmark.circle.fill")
+                .font(.system(size: 32))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.secondary)
+        }
+        .padding(8)
+    }
+}
+
 // MARK: - File Type Placeholder
 
 struct OfflineFileTypePlaceholder: View {
     let fileType: OfflineFileType
 
+    private var iconColor: Color {
+        fileType == .pdf ? Color(.systemRed) : Color(.tertiaryLabel)
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: fileType.iconName)
                 .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(iconColor)
             Text(fileType.localizedLabel)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 160)
+        .frame(height: 200)
     }
 }
 
-// MARK: - Loading View
+// MARK: - Loading View (matches Android pipeline steps)
 
 struct OfflineLoadingView: View {
     private let strings = OfflineScannerStrings()
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             ProgressView()
-            Text(strings.loadingOcr)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text(strings.loadingCleanup)
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 4)
+            OfflinePipelineStep(label: strings.loadingOcr, done: true)
+            OfflinePipelineStep(label: strings.loadingCleanup, done: true)
+            OfflinePipelineStep(label: strings.pipelineExtract, done: false)
         }
-        .frame(maxWidth: .infinity)
-        .padding(24)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
     }
 }
 
-// MARK: - Error Card
+private struct OfflinePipelineStep: View {
+    let label: String
+    let done: Bool
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(done ? Color.accentColor : Color(.systemGray4))
+                .frame(width: 8, height: 8)
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(done ? Color.primary : Color(.tertiaryLabel))
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Error Card (matches Android errorContainer style)
 
 struct OfflineErrorCard: View {
     let message: String
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "exclamationmark.circle")
+                .font(.system(size: 20))
                 .foregroundStyle(.red)
             Text(message)
                 .font(.subheadline)
@@ -55,12 +95,12 @@ struct OfflineErrorCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemRed).opacity(0.15))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(Color(.systemRed).opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
 
-// MARK: - Expandable Result Card
+// MARK: - Expandable Result Card (matches Android OfflineSuccessCard)
 
 struct ExpandableResultCard: View {
     let data: DomainMedicalData
@@ -68,72 +108,108 @@ struct ExpandableResultCard: View {
     private let strings = OfflineScannerStrings()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Button(action: { withAnimation { expanded.toggle() } }) {
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: { withAnimation(.easeInOut(duration: 0.25)) { expanded.toggle() } }) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(.tertiarySystemFill))
+                            .frame(width: 32, height: 32)
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(Color.accentColor.opacity(0.8))
+                    }
                     Text(strings.viewResult)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.accentColor)
                     Spacer()
                     Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.secondary)
                 }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             if expanded {
-                VStack(alignment: .leading, spacing: 12) {
-                    if let docType = data.documentType {
-                        OfflineMetaRow(title: strings.labelDocumentType, value: docType)
-                    }
-                    Divider()
-                    if let inst = data.institution {
-                        OfflineMetaRow(title: strings.labelInstitution, value: inst)
-                    }
-                    if let doc = data.doctorName {
-                        OfflineMetaRow(title: strings.labelDoctor, value: doc)
-                    }
-                    if let date = data.analysisDate {
-                        OfflineMetaRow(title: strings.labelAnalysisDate, value: date)
-                    }
-                    if let indicators = data.indicators, !indicators.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(strings.indicatorsCount(indicators.count))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            VStack(spacing: 4) {
-                                ForEach(indicators.indices, id: \.self) { i in
-                                    let ind = indicators[i]
-                                    HStack {
-                                        Text(ind.name)
-                                            .foregroundStyle(.secondary)
-                                        Spacer()
-                                        Text(ind.value)
-                                            .fontWeight(.medium)
-                                        if let ref = ind.referenceRange {
-                                            Text(ref)
-                                                .font(.caption2)
-                                                .foregroundStyle(.tertiary)
-                                        }
-                                    }
+                OfflineExpandedContent(data: data)
+            }
+        }
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+    }
+}
+
+private struct OfflineExpandedContent: View {
+    let data: DomainMedicalData
+    private let strings = OfflineScannerStrings()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            if let docType = data.documentType {
+                HStack {
+                    Text(strings.labelDocumentType)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color(.secondaryLabel))
+                    Spacer()
+                    Text(docType)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color.primary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(.tertiarySystemFill).opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            Divider().background(Color(.separator))
+            if let inst = data.institution {
+                OfflineMetaRow(title: strings.labelInstitution, value: inst)
+            }
+            if let doc = data.doctorName {
+                OfflineMetaRow(title: strings.labelDoctor, value: doc)
+            }
+            if let date = data.analysisDate {
+                OfflineMetaRow(title: strings.labelAnalysisDate, value: date)
+            }
+            if let indicators = data.indicators, !indicators.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(strings.indicatorsCount(indicators.count))
+                        .font(.caption)
+                        .foregroundStyle(Color(.secondaryLabel))
+                    VStack(spacing: 4) {
+                        ForEach(indicators.indices, id: \.self) { i in
+                            let ind = indicators[i]
+                            HStack(alignment: .top) {
+                                Text(ind.name)
                                     .font(.subheadline)
+                                    .foregroundStyle(Color(.secondaryLabel))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Text(ind.value)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                if let ref = ind.referenceRange {
+                                    Text(ref)
+                                        .font(.caption2)
+                                        .foregroundStyle(Color(.tertiaryLabel))
                                 }
                             }
-                            .padding(12)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
+                    .padding(12)
+                    .background(Color(.secondarySystemBackground).opacity(0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
         }
-        .padding(16)
-        .background(Color(.secondarySystemBackground).opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
     }
 }
 
@@ -145,26 +221,42 @@ struct OfflineMetaRow: View {
         HStack(alignment: .top, spacing: 8) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(.secondary)
-                .frame(width: 100, alignment: .leading)
+                .foregroundStyle(Color(.secondaryLabel))
+                .frame(width: 110, alignment: .leading)
             Text(value)
                 .font(.subheadline)
         }
     }
 }
 
-// MARK: - Toast
+// MARK: - Toast (bottom, framed with rounded corners)
 
 struct OfflineToastView: View {
     let message: String
 
     var body: some View {
-        Text(message)
-            .font(.subheadline)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(.ultraThinMaterial)
-            .clipShape(Capsule())
-            .padding(.bottom, 32)
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Color.accentColor)
+            Text(message)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(Color.primary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.systemGray6).opacity(0.98))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(.systemGray4), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.15), radius: 12, y: 4)
+        )
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, 40)
     }
 }

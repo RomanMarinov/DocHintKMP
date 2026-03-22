@@ -3,7 +3,6 @@ import SwiftUI
 /// AI Scanner screen — design matches Android OcrAiScannerScreen.
 struct AIScannerScreen: View {
     @StateObject private var viewModel = AIScannerViewModel()
-    @State private var resultExpanded = false
     @State private var showFilePicker = false
     private let strings = AIScannerStrings()
 
@@ -23,7 +22,7 @@ struct AIScannerScreen: View {
         ) { result in
             viewModel.handleFilePick(result: result)
         }
-        .overlay { toastOverlay }
+        .overlay(alignment: .bottom) { toastOverlay }
     }
 
     private var headerView: some View {
@@ -46,9 +45,6 @@ struct AIScannerScreen: View {
             } else {
                 selectedImageSection
             }
-            if case .loading = viewModel.contentState, viewModel.selectedImage != nil {
-                AILoadingCard()
-            }
             if case .error(let msg) = viewModel.contentState {
                 AIErrorCard(message: msg)
             }
@@ -59,21 +55,27 @@ struct AIScannerScreen: View {
     private var apiKeyHint: some View {
         Text(strings.addApiKeyHint)
             .font(.subheadline)
-            .foregroundStyle(.primary)
+            .foregroundStyle(Color.primary)
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.systemRed).opacity(0.2))
+            .background(Color(.systemRed).opacity(0.15))
             .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private var selectImageCard: some View {
         Button(action: { showFilePicker = true }) {
             VStack(spacing: 12) {
-                Image(systemName: "doc.badge.plus")
-                    .font(.system(size: 40))
-                    .foregroundStyle(Color.accentColor)
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.2))
+                        .frame(width: 56, height: 56)
+                    Image(systemName: "doc.badge.plus")
+                        .font(.system(size: 28))
+                        .foregroundStyle(Color.accentColor)
+                }
                 Text(strings.selectImage)
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
                     .foregroundStyle(Color.accentColor)
                 Text(strings.supportedFormats)
                     .font(.caption)
@@ -81,7 +83,7 @@ struct AIScannerScreen: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 160)
-            .background(Color(.secondarySystemBackground))
+            .background(Color(.systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
@@ -96,7 +98,7 @@ struct AIScannerScreen: View {
         VStack(spacing: 16) {
             imagePreviewWithClose
             if case .success(let data) = viewModel.contentState {
-                expandableResultCard(data: data)
+                AIExpandableResultCard(data: data)
             } else {
                 recognizeButton
             }
@@ -113,41 +115,11 @@ struct AIScannerScreen: View {
                     .clipped()
                     .clipShape(RoundedRectangle(cornerRadius: 16))
             }
-            Button(action: { viewModel.resetState() }) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(12)
+            CloseButton(action: { viewModel.resetState() })
         }
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
-    }
-
-    private func expandableResultCard(data: AIMedicalData) -> some View {
-        VStack(spacing: 0) {
-            Button(action: { withAnimation { resultExpanded.toggle() } }) {
-                HStack {
-                    Text(strings.viewResult)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    Spacer()
-                    Image(systemName: resultExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 16)
-                .frame(height: 52)
-            }
-            .buttonStyle(.plain)
-            if resultExpanded {
-                Divider()
-                AISuccessCard(data: data, inDropdown: true)
-            }
-        }
-        .background(Color(.secondarySystemBackground).opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private var recognizeButton: some View {
@@ -161,11 +133,13 @@ struct AIScannerScreen: View {
                     Text(strings.recognizeDocument)
                 }
             }
+            .font(.subheadline)
             .fontWeight(.semibold)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
         }
         .buttonStyle(.borderedProminent)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
         .disabled(!viewModel.hasSavedKey || viewModel.contentState.isLoading)
     }
 

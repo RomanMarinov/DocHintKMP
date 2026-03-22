@@ -35,7 +35,7 @@ struct OfflineScannerScreen: View {
             ) { result in
                 viewModel.handleFilePick(result: result)
             }
-            .overlay {
+            .overlay(alignment: .bottom) {
                 if let msg = viewModel.toastMessage {
                     OfflineToastView(message: msg)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -62,69 +62,90 @@ struct OfflineScannerScreen: View {
     private var selectFileCard: some View {
         Button(action: { viewModel.showFilePicker = true }) {
             VStack(spacing: 12) {
-                Image(systemName: "doc.badge.plus")
-                    .font(.system(size: 40))
-                    .foregroundStyle(.tint)
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.2))
+                        .frame(width: 56, height: 56)
+                    Image(systemName: "doc.badge.plus")
+                        .font(.system(size: 28))
+                        .foregroundStyle(Color.accentColor)
+                }
                 Text(strings.selectFile)
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color.accentColor)
                 Text(strings.supportedFormats)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 160)
-            .background(Color(.secondarySystemBackground))
+            .background(Color(.systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color(.systemGray4), lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
 
     private var selectedFileCard: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
+            // Card: only preview + close
             ZStack(alignment: .topTrailing) {
                 previewView
-                Button(action: { viewModel.resetState() }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(12)
+                CloseButton(action: { viewModel.resetState() })
             }
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
 
+            // Buttons outside card (like AI Scanner)
             if case .idle = viewModel.contentState {
-                Button(action: {
-                    Task { await viewModel.processFile() }
-                }) {
-                    Text(strings.recognize)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                }
-                .buttonStyle(.borderedProminent)
+                recognizeButton
             }
-
             if case .loading = viewModel.contentState {
-                OfflineLoadingView()
+                recognizeButton
             }
-
             if case .success(let data, let processedText) = viewModel.contentState {
                 ExpandableResultCard(data: data)
                 Button(action: { viewModel.saveDocument(data: data, processedText: processedText) }) {
                     Text(strings.saveToDocuments)
+                        .font(.subheadline)
                         .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
                         .frame(height: 44)
                 }
                 .buttonStyle(.borderedProminent)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-
             if case .error(let message) = viewModel.contentState {
                 OfflineErrorCard(message: message)
             }
         }
-        .padding(20)
-        .background(Color(.systemBackground))
+    }
+
+    private var recognizeButton: some View {
+        Button(action: {
+            Task { await viewModel.processFile() }
+        }) {
+            HStack(spacing: 8) {
+                if case .loading = viewModel.contentState {
+                    ProgressView().tint(.white)
+                    Text(strings.processing)
+                } else {
+                    Text(strings.recognize)
+                }
+            }
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+        }
+        .buttonStyle(.borderedProminent)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+        .disabled(viewModel.contentState.isLoading)
     }
 
     private var previewView: some View {
@@ -153,6 +174,13 @@ struct OfflineScannerScreen: View {
         OfflineFileTypePlaceholder(fileType: viewModel.fileType)
     }
 
+}
+
+extension OfflineContentState {
+    var isLoading: Bool {
+        if case .loading = self { return true }
+        return false
+    }
 }
 
 struct OfflineScannerView_Previews: PreviewProvider {

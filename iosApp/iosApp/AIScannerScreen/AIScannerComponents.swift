@@ -8,7 +8,9 @@ struct AILoadingCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             ProgressView()
-                .scaleEffect(0.9)
+                .scaleEffect(1)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 4)
             AIPipelineStep(label: strings.pipelineOcr, done: true)
             AIPipelineStep(label: strings.pipelineCleanup, done: true)
             AIPipelineStep(label: strings.pipelineDetect, done: true)
@@ -33,43 +35,80 @@ struct AIPipelineStep: View {
                 .frame(width: 8, height: 8)
             Text(label)
                 .font(.subheadline)
-                .foregroundStyle(done ? Color.primary : Color.secondary)
+                .foregroundStyle(done ? Color.primary : Color(.tertiaryLabel))
         }
+        .padding(.vertical, 4)
     }
 }
 
-// MARK: - Success Card
-struct AISuccessCard: View {
+// MARK: - Expandable Success Card (matches Android AiSuccessCard)
+struct AIExpandableResultCard: View {
     let data: AIMedicalData
-    let inDropdown: Bool
+    @State private var expanded = false
     private let strings = AIScannerStrings()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-                    .font(.title3)
-                Text(strings.dataExtracted)
-                    .font(.headline)
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: { withAnimation(.easeInOut(duration: 0.25)) { expanded.toggle() } }) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(Color(.tertiarySystemFill))
+                            .frame(width: 32, height: 32)
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(Color.accentColor.opacity(0.8))
+                    }
+                    Text(strings.viewResult)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color.accentColor)
+                    Spacer()
+                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.secondary)
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
+            if expanded {
+                AIExpandedContent(data: data)
+            }
+        }
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+    }
+}
+
+private struct AIExpandedContent: View {
+    let data: AIMedicalData
+    private let strings = AIScannerStrings()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Document type row
             HStack {
                 Text(strings.labelDocumentType)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color(.secondaryLabel))
                 Spacer()
                 Text(data.documentType)
                     .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color.accentColor)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color.primary)
             }
-            .padding(.horizontal, 14)
+            .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .background(Color.accentColor.opacity(0.15))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(.tertiarySystemFill).opacity(0.5))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            Divider()
+            Divider().background(Color(.separator))
 
             if let inst = data.institution {
                 AIDataField(label: strings.labelInstitution, value: inst)
@@ -85,22 +124,23 @@ struct AISuccessCard: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(String(format: String(localized: "offline_indicators_count"), data.indicators.count))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color(.secondaryLabel))
                     VStack(spacing: 4) {
                         ForEach(Array(data.indicators.enumerated()), id: \.offset) { _, ind in
-                            HStack {
+                            HStack(alignment: .top) {
                                 Text(ind.name)
-                                    .foregroundStyle(.secondary)
-                                Spacer()
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color(.secondaryLabel))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                 Text(ind.value)
+                                    .font(.subheadline)
                                     .fontWeight(.medium)
                                 if let ref = ind.referenceRange {
                                     Text(ref)
                                         .font(.caption2)
-                                        .foregroundStyle(.tertiary)
+                                        .foregroundStyle(Color(.tertiaryLabel))
                                 }
                             }
-                            .font(.subheadline)
                         }
                     }
                     .padding(12)
@@ -109,9 +149,8 @@ struct AISuccessCard: View {
                 }
             }
         }
-        .padding(inDropdown ? 16 : 20)
-        .background(inDropdown ? Color(.secondarySystemBackground) : Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: inDropdown ? 12 : 16))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
     }
 }
 
@@ -131,13 +170,14 @@ struct AIDataField: View {
     }
 }
 
-// MARK: - Error Card
+// MARK: - Error Card (matches Android errorContainer style)
 struct AIErrorCard: View {
     let message: String
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "exclamationmark.triangle.fill")
+            Image(systemName: "exclamationmark.circle")
+                .font(.system(size: 20))
                 .foregroundStyle(.red)
             Text(message)
                 .font(.subheadline)
@@ -145,22 +185,38 @@ struct AIErrorCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemRed).opacity(0.15))
+        .background(Color(.systemRed).opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
 
-// MARK: - Toast
+// MARK: - Toast (bottom, framed with rounded corners)
 struct AIToastView: View {
     let message: String
 
     var body: some View {
-        Text(message)
-            .font(.subheadline)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(.ultraThinMaterial)
-            .clipShape(Capsule())
-            .padding(.bottom, 32)
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Color.accentColor)
+            Text(message)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(Color.primary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.systemGray6).opacity(0.98))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color(.systemGray4), lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.15), radius: 12, y: 4)
+        )
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity)
+        .padding(.bottom, 40)
     }
 }
