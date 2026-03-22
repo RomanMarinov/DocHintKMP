@@ -1,6 +1,5 @@
 package app.romanmarinov.dochintkmp.presentation.ai_scanner
 
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -55,7 +54,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -63,7 +61,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
 import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiContentState
-import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiScannerEffect
+import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiErrorType
 import app.romanmarinov.dochintkmp.presentation.ai_scanner.model.OcrAiScannerEvent
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -75,16 +73,17 @@ fun OcrAiScannerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.onEvent(OcrAiScannerEvent.RefreshKey)
     }
-    LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
-            when (effect) {
-                is OcrAiScannerEffect.ShowToast ->
-                    Toast.makeText(context, context.getString(effect.type.stringResId), Toast.LENGTH_SHORT).show()
-            }
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val toastType = uiState.toastType
+    if (toastType != null) {
+        val message = stringResource(toastType.stringResId)
+        LaunchedEffect(toastType) {
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.onToastShown()
         }
     }
 
@@ -415,13 +414,6 @@ private fun SuccessCardContent(result: ParseResult, padding: androidx.compose.ui
                 stringResource(R.string.token_stats_format, result.promptTokens, result.completionTokens, result.totalTokens),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        result.model?.let { model ->
-            Text(
-                model,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline
             )
         }
     }

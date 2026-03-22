@@ -57,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.presentation.settings.model.SettingsEffect
 import app.romanmarinov.dochintkmp.presentation.settings.model.SettingsEvent
+import app.romanmarinov.dochintkmp.presentation.settings.model.SettingsState
 import org.koin.androidx.compose.koinViewModel
 import kotlin.math.min
 

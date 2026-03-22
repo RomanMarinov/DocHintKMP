@@ -30,7 +30,10 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
             implementation(projects.shared)
+            implementation(projects.domain)
+            implementation(projects.data)
         }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)

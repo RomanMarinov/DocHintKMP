@@ -5,5 +5,6 @@ import android.net.Uri
 data class OcrAiScannerState(
     val contentState: OcrAiContentState = OcrAiContentState.Idle,
     val hasSavedKey: Boolean = false,
-    val selectedUri: Uri? = null
+    val selectedUri: Uri? = null,
+    val toastType: OcrAiToastType? = null
 )

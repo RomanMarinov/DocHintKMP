@@ -8,5 +8,6 @@ data class OcrOfflineScannerState(
     val contentState: OcrOfflineContentState = OcrOfflineContentState.Idle,
     val selectedUri: Uri? = null,
     val fileType: FileType = FileType.PDF,
-    val pdfPreviewBitmap: Bitmap? = null
+    val pdfPreviewBitmap: Bitmap? = null,
+    val toastType: OcrOfflineToastType? = null
 )

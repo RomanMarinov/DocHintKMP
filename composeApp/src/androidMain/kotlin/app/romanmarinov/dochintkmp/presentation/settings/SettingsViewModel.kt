@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.romanmarinov.dochintkmp.data.local.SecureStorage
 import app.romanmarinov.dochintkmp.data.remote.OpenRouterClient
+import app.romanmarinov.dochintkmp.presentation.settings.model.KeyInfo
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

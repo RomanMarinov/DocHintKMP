@@ -16,6 +16,7 @@ kotlin {
         }
     }
 
+    // Match KotlinProject2: only iosArm64 and iosSimulatorArm64
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -28,6 +29,8 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.domain)
+            implementation(projects.data)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.ktor.client.core)

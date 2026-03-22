@@ -17,10 +17,10 @@ import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.ClearResultsUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.ExtractTextFromImageUseCase
-import app.romanmarinov.dochintkmp.domain.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.ObserveResultsUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.ParseWithLlmUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.RemoveResultUseCase
+import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.presentation.ai_scanner.OcrAiScannerViewModel
 import app.romanmarinov.dochintkmp.presentation.documents.ResultsViewModel
 import app.romanmarinov.dochintkmp.presentation.offline_scanner.OcrOfflineScannerViewModel
@@ -50,10 +50,7 @@ val dataModule = module {
     }
 
     single<ResultsRepository> { ResultsRepositoryImpl() }
-}
 
-val domainModule = module {
-    factory { ExtractTextFromImageUseCase(get()) }
     factory {
         ExtractTextOfflineUseCase(
             get<PaddleOcrEngine>(),
@@ -62,6 +59,10 @@ val domainModule = module {
             androidContext().contentResolver
         )
     }
+}
+
+val domainModule = module {
+    factory { ExtractTextFromImageUseCase(get()) }
     factory { ParseWithLlmUseCase(get()) }
     factory { ObserveResultsUseCase(get()) }
     factory { CheckDuplicateUseCase(get()) }

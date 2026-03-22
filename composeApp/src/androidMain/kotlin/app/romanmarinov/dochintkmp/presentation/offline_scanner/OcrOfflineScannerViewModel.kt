@@ -2,22 +2,19 @@ package app.romanmarinov.dochintkmp.presentation.offline_scanner
 
 import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineContentState
 import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineErrorType
-import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerEffect
 import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerEvent
 import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.romanmarinov.dochintkmp.data.ocr.PdfPageRenderer
 import app.romanmarinov.dochintkmp.data.parser.RuleParser
+import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.domain.model.FileType
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
-import app.romanmarinov.dochintkmp.domain.usecase.ExtractTextOfflineUseCase
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import android.net.Uri
@@ -35,9 +32,6 @@ class OcrOfflineScannerViewModel(
     private val _uiState = MutableStateFlow(OcrOfflineScannerState())
     val uiState: StateFlow<OcrOfflineScannerState> = _uiState.asStateFlow()
 
-    private val _effect = Channel<OcrOfflineScannerEffect>()
-    val effect = _effect.receiveAsFlow()
-
     fun onEvent(event: OcrOfflineScannerEvent) {
         when (event) {
             is OcrOfflineScannerEvent.SelectFile -> selectFile(event.uri, event.fileType)
@@ -45,6 +39,10 @@ class OcrOfflineScannerViewModel(
             is OcrOfflineScannerEvent.SaveDocument -> saveDocument()
             is OcrOfflineScannerEvent.ResetState -> resetState()
         }
+    }
+
+    fun onToastShown() {
+        _uiState.update { it.copy(toastType = null) }
     }
 
     private fun selectFile(uri: Uri, fileType: FileType) {
@@ -79,7 +77,7 @@ class OcrOfflineScannerViewModel(
     private fun processFile() {
         val state = _uiState.value
         val uri = state.selectedUri ?: run {
-            viewModelScope.launch { _effect.send(OcrOfflineScannerEffect.ShowToast(OcrOfflineToastType.SELECT_FILE)) }
+            _uiState.update { it.copy(toastType = OcrOfflineToastType.SELECT_FILE) }
             return
         }
 
@@ -104,7 +102,7 @@ class OcrOfflineScannerViewModel(
         val data = (_uiState.value.contentState as? OcrOfflineContentState.Success)?.data ?: return
         viewModelScope.launch {
             addResult(data)
-            _effect.send(OcrOfflineScannerEffect.ShowToast(OcrOfflineToastType.ADDED_TO_DOCUMENTS))
+            _uiState.update { it.copy(toastType = OcrOfflineToastType.ADDED_TO_DOCUMENTS) }
             resetState()
         }
     }

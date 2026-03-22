@@ -1,6 +1,5 @@
 package app.romanmarinov.dochintkmp.presentation.offline_scanner
 
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -67,8 +66,9 @@ import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.domain.model.FileType
 import app.romanmarinov.dochintkmp.domain.model.MedicalData
 import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineContentState
-import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerEffect
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineErrorType
 import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerEvent
+import app.romanmarinov.dochintkmp.presentation.offline_scanner.model.OcrOfflineScannerState
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.koin.androidx.compose.koinViewModel
@@ -76,14 +76,14 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun OcrOfflineScannerScreen(viewModel: OcrOfflineScannerViewModel = koinViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
-            when (effect) {
-                is OcrOfflineScannerEffect.ShowToast ->
-                    Toast.makeText(context, context.getString(effect.type.stringResId), Toast.LENGTH_SHORT).show()
-            }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val toastType = uiState.toastType
+    if (toastType != null) {
+        val message = stringResource(toastType.stringResId)
+        LaunchedEffect(toastType) {
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.onToastShown()
         }
     }
 
