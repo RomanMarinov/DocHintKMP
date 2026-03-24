@@ -50,6 +50,7 @@ struct AIScannerScreen: View {
             }
         }
         .padding(.horizontal, 16)
+        .padding(.bottom, 16)
     }
 
     private var apiKeyHint: some View {
@@ -97,8 +98,16 @@ struct AIScannerScreen: View {
     private var selectedImageSection: some View {
         VStack(spacing: 16) {
             imagePreviewWithClose
-            if case .success(let data) = viewModel.contentState {
+            if case .success(let data, _) = viewModel.contentState {
                 AIExpandableResultCard(data: data)
+                Button(action: { viewModel.saveDocument() }) {
+                    Text(strings.saveToDocuments)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                }
+                .buttonStyle(.borderedProminent)
             } else {
                 recognizeButton
             }

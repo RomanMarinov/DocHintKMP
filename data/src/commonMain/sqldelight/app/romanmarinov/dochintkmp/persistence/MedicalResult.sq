@@ -1,0 +1,41 @@
+-- Таблица для распарсенных медицинских документов.
+-- AI Scanner: разнообразные метрики (LLM может вернуть любые имена показателей).
+-- Offline Scanner: строго по правилам (ОАК/БАК, фиксированный набор LaboratoryIndicatorNames).
+-- indicators хранится как JSON для гибкости: [{name, value, reference_range?}]
+
+CREATE TABLE MedicalResult (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    documentType TEXT,
+    institution TEXT,
+    doctorName TEXT,
+    analysisDate TEXT,
+    indicators TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'unknown',
+    createdAt INTEGER NOT NULL
+);
+
+CREATE INDEX MedicalResult_createdAt ON MedicalResult(createdAt DESC);
+
+selectAll:
+SELECT id, documentType, institution, doctorName, analysisDate, indicators, source, createdAt
+FROM MedicalResult
+ORDER BY createdAt DESC;
+
+selectById:
+SELECT id, documentType, institution, doctorName, analysisDate, indicators, source, createdAt
+FROM MedicalResult
+WHERE id = ?;
+
+insertResult:
+INSERT INTO MedicalResult(documentType, institution, doctorName, analysisDate, indicators, source, createdAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM MedicalResult
+WHERE id = ?;
+
+selectIdsOrdered:
+SELECT id FROM MedicalResult ORDER BY createdAt DESC;
+
+deleteAll:
+DELETE FROM MedicalResult;

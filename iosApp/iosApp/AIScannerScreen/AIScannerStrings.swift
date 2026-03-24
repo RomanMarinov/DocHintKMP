@@ -15,6 +15,8 @@ struct AIScannerStrings {
     var pipelineLlm: String { String(localized: "ai_pipeline_llm") }
     var contentDescRemove: String { String(localized: "ai_content_desc_remove") }
     var toastAddedToDocuments: String { String(localized: "toast_added_to_documents") }
+    /// Same key as offline scanner — explicit save after AI parse.
+    var saveToDocuments: String { String(localized: "offline_save_to_documents") }
     var errorSelectImage: String { String(localized: "ai_error_select_image") }
     var errorSaveKey: String { String(localized: "ai_error_save_key") }
     var errorNoNetwork: String { String(localized: "ai_error_no_network") }

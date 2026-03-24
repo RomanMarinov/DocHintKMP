@@ -23,7 +23,8 @@ final class AIScannerViewModel: ObservableObject {
     enum AIContentState {
         case idle
         case loading
-        case success(AIMedicalData)
+        /// Parsed result + OCR text; save to documents is explicit via `saveDocument()` (same flow as offline scanner).
+        case success(AIMedicalData, processedText: String)
         case error(String)
     }
 
@@ -105,11 +106,7 @@ final class AIScannerViewModel: ObservableObject {
             }
 
             let result = try await openRouter.parseWithLlm(apiKey: key, cleanText: cleanText)
-            contentState = .success(result)
-
-            let domainData = toDomainMedicalData(result)
-            aiController.saveDocument(data: domainData, processedText: cleanText)
-            showToast(strings.toastAddedToDocuments)
+            contentState = .success(result, processedText: cleanText)
         } catch let e as OpenRouterService.AIError {
             switch e {
             case .invalidKey: contentState = .error(strings.errorSaveKey)
@@ -126,6 +123,14 @@ final class AIScannerViewModel: ObservableObject {
 
     func dismissToast() {
         toastMessage = nil
+    }
+
+    func saveDocument() {
+        guard case let .success(data, processedText) = contentState else { return }
+        let domainData = toDomainMedicalData(data)
+        aiController.saveDocument(data: domainData, processedText: processedText)
+        showToast(strings.toastAddedToDocuments)
+        resetState()
     }
 
     private func extractText(from image: UIImage) throws -> String {

@@ -1,5 +1,9 @@
 package app.romanmarinov.dochintkmp.di
 
+import app.romanmarinov.dochintkmp.data.local.DatabaseDriverFactory
+import app.romanmarinov.dochintkmp.data.local.ProcessedHashCache
+import app.romanmarinov.dochintkmp.data.local.ProcessedHashStorage
+import app.romanmarinov.dochintkmp.data.local.createProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.local.SecureStorage
 import app.romanmarinov.dochintkmp.data.ocr.DocxTextExtractor
 import app.romanmarinov.dochintkmp.data.ocr.OcrEngine
@@ -31,6 +35,13 @@ import org.koin.dsl.module
 
 val dataModule = module {
 
+    single { DatabaseDriverFactory(androidContext()) }
+    single<ProcessedHashStorage> {
+        createProcessedHashStorage {
+            androidContext().filesDir.resolve("processed_hashes.preferences_pb").absolutePath
+        }
+    }
+    single { ProcessedHashCache(get()) }
     single { SecureStorage(androidContext()) }
 
     single<OcrEngine> { TesseractOcrEngine(androidContext()) }
@@ -49,7 +60,7 @@ val dataModule = module {
         MedicalRepositoryImpl(get(), get())
     }
 
-    single<ResultsRepository> { ResultsRepositoryImpl() }
+    single<ResultsRepository> { ResultsRepositoryImpl(get(), get()) }
 
     factory {
         ExtractTextOfflineUseCase(

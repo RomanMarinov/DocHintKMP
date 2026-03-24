@@ -11,6 +11,7 @@ import app.romanmarinov.dochintkmp.data.local.SecureStorage
 import app.romanmarinov.dochintkmp.data.ocr.PdfPageRenderer
 import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.domain.model.FileType
+import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.ExtractTextFromImageUseCase
@@ -40,6 +41,7 @@ class OcrAiScannerViewModel(
         when (event) {
             is OcrAiScannerEvent.SelectFile -> selectFile(event.uri, event.fileType)
             is OcrAiScannerEvent.ProcessImage -> processImage()
+            is OcrAiScannerEvent.SaveDocument -> saveDocument()
             is OcrAiScannerEvent.ResetState -> resetState()
             is OcrAiScannerEvent.RefreshKey -> updateState { it.copy(hasSavedKey = secureStorage.apiKey.isNotEmpty()) }
         }
@@ -107,15 +109,22 @@ class OcrAiScannerViewModel(
 
                 val result = parseWithLlm(key, cleanText)
 
-                updateState { it.copy(contentState = OcrAiContentState.Success(result)) }
-                addResult(result.data, cleanText)
-                updateState { it.copy(toastType = OcrAiToastType.ADDED_TO_DOCUMENTS) }
+                updateState { it.copy(contentState = OcrAiContentState.Success(result, cleanText)) }
             } catch (e: UnknownHostException) {
                 updateState { it.copy(contentState = OcrAiContentState.Error(OcrAiErrorType.NO_NETWORK)) }
             } catch (e: Exception) {
                 val msg = e.message?.takeIf { it.isNotBlank() } ?: e.toString()
                 updateState { it.copy(contentState = OcrAiContentState.Error(OcrAiErrorType.UNKNOWN, msg)) }
             }
+        }
+    }
+
+    private fun saveDocument() {
+        val success = _uiState.value.contentState as? OcrAiContentState.Success ?: return
+        viewModelScope.launch {
+            addResult(success.parseResult.data, success.cleanText, ResultsRepository.SOURCE_AI)
+            updateState { it.copy(toastType = OcrAiToastType.ADDED_TO_DOCUMENTS) }
+            resetState()
         }
     }
 

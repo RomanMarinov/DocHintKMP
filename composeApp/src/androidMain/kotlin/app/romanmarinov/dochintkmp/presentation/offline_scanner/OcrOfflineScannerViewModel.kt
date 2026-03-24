@@ -10,6 +10,7 @@ import app.romanmarinov.dochintkmp.data.ocr.PdfPageRenderer
 import app.romanmarinov.dochintkmp.data.parser.RuleParser
 import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.domain.model.FileType
+import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -101,7 +102,7 @@ class OcrOfflineScannerViewModel(
     private fun saveDocument() {
         val success = _uiState.value.contentState as? OcrOfflineContentState.Success ?: return
         viewModelScope.launch {
-            addResult(success.data, success.processedText)
+            addResult(success.data, success.processedText, ResultsRepository.SOURCE_OFFLINE)
             _uiState.update { it.copy(toastType = OcrOfflineToastType.ADDED_TO_DOCUMENTS) }
             resetState()
         }

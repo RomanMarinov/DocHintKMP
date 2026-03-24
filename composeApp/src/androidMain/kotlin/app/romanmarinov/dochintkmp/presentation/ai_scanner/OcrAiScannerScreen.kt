@@ -246,8 +246,26 @@ fun OcrAiScannerScreen(
 
                 val isSuccess = uiState.contentState is OcrAiContentState.Success
                 if (isSuccess) {
-                    val successData = (uiState.contentState as OcrAiContentState.Success).data
-                    AiSuccessCard(result = successData)
+                    val success = uiState.contentState as OcrAiContentState.Success
+                    Column {
+                        AiSuccessCard(result = success.parseResult)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Button(
+                                onClick = { viewModel.onEvent(OcrAiScannerEvent.SaveDocument) },
+                                modifier = Modifier.height(44.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    stringResource(R.string.adding_document_save),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        }
+                    }
                 } else {
                     Button(
                         onClick = { viewModel.onEvent(OcrAiScannerEvent.ProcessImage) },

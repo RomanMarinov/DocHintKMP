@@ -3,6 +3,7 @@ package app.romanmarinov.dochintkmp.shared.ios
 import app.romanmarinov.dochintkmp.data.parser.RuleParser
 import app.romanmarinov.dochintkmp.data.text.TextCleaner
 import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
 import org.koin.core.component.KoinComponent
@@ -53,7 +54,7 @@ class OfflineScannerController : KoinComponent {
      * Save parsed medical data to documents list.
      */
     fun saveDocument(data: MedicalData, processedText: String) {
-        addResultUseCase(data, processedText)
+        addResultUseCase(data, processedText, ResultsRepository.SOURCE_OFFLINE)
     }
 
     data class ProcessResult(

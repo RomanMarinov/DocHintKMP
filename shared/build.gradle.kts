@@ -24,6 +24,8 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            // SQLDelight native driver — unresolved sqlite3_* without linking system libsqlite3
+            linkerOpts("-lsqlite3")
         }
     }
 
