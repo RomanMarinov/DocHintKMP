@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import app.romanmarinov.dochintkmp.ui.theme.DocHintTheme
-import app.romanmarinov.dochintkmp.presentation.navigation.AppNavigation
+import app.romanmarinov.dochintkmp.navigation.AppNavigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 

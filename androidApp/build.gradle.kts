@@ -13,7 +13,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-//        consumerProguardFiles("consumer-rules.pro")
     }
     buildTypes {
         release {
@@ -36,7 +35,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
-
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.uiToolingPreview)
 }

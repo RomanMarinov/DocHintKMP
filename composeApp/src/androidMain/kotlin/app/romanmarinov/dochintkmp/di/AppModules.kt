@@ -25,10 +25,10 @@ import app.romanmarinov.dochintkmp.domain.usecase.ObserveResultsUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.ParseWithLlmUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.RemoveResultUseCase
 import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
-import app.romanmarinov.dochintkmp.presentation.ai_scanner.OcrAiScannerViewModel
-import app.romanmarinov.dochintkmp.presentation.documents.ResultsViewModel
-import app.romanmarinov.dochintkmp.presentation.offline_scanner.OcrOfflineScannerViewModel
-import app.romanmarinov.dochintkmp.presentation.settings.SettingsViewModel
+import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.OcrAiScannerViewModel
+import app.romanmarinov.dochintkmp.presentation.documents_screen.ResultsViewModel
+import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.OcrOfflineScannerViewModel
+import app.romanmarinov.dochintkmp.presentation.settings_screen.SettingsViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
