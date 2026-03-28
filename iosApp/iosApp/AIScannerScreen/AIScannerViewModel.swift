@@ -1,6 +1,5 @@
 import SwiftUI
 import UniformTypeIdentifiers
-import Vision
 import PDFKit
 import Shared
 
@@ -11,10 +10,12 @@ final class AIScannerViewModel: ObservableObject {
     @Published var contentState: AIContentState = .idle
     @Published var hasSavedKey = false
     @Published var toastMessage: String?
-    private let strings = AIScannerStrings()
-    private let keychain = KeychainStorage()
-    private let openRouter = OpenRouterService()
-    private let aiController = AIScannerController()
+
+    private let strings: AIScannerStrings
+    private let keychain: AIScannerKeychainReading
+    private let openRouter: AIScannerLlmClient
+    private let domain: AIScannerDomainBackend
+    private let ocr: AIScannerOcrProviding
 
     var supportedTypes: [UTType] {
         [.image, .jpeg, .png, .pdf]
@@ -23,12 +24,22 @@ final class AIScannerViewModel: ObservableObject {
     enum AIContentState {
         case idle
         case loading
-        /// Parsed result + OCR text; save to documents is explicit via `saveDocument()` (same flow as offline scanner).
         case success(AIMedicalData, processedText: String)
         case error(String)
     }
 
-    init() {
+    init(
+        strings: AIScannerStrings = AIScannerStrings(),
+        keychain: AIScannerKeychainReading = KeychainStorage(),
+        openRouter: AIScannerLlmClient = OpenRouterService(),
+        domain: AIScannerDomainBackend = KotlinAIScannerDomainBackend(),
+        ocr: AIScannerOcrProviding = DefaultAIScannerOcrProvider()
+    ) {
+        self.strings = strings
+        self.keychain = keychain
+        self.openRouter = openRouter
+        self.domain = domain
+        self.ocr = ocr
         hasSavedKey = !keychain.apiKey.isEmpty
     }
 
@@ -86,21 +97,20 @@ final class AIScannerViewModel: ObservableObject {
         }
 
         contentState = .loading
-        defer { }
 
         do {
             let cleanText: String
             if let url = selectedURL, url.pathExtension.lowercased() == "pdf" {
-                cleanText = OfflineScannerTextExtractor.extract(from: url, fileType: .pdf) ?? ""
+                cleanText = await ocr.extractPdfText(from: url) ?? ""
             } else {
-                cleanText = try extractText(from: img)
+                cleanText = try ocr.extractText(from: img)
             }
             if cleanText.isEmpty {
                 contentState = .error(strings.errorUnknown)
                 return
             }
 
-            if aiController.checkDuplicate(cleanText: cleanText) {
+            if domain.checkDuplicate(cleanText: cleanText) {
                 contentState = .error(strings.errorDuplicate)
                 return
             }
@@ -128,21 +138,9 @@ final class AIScannerViewModel: ObservableObject {
     func saveDocument() {
         guard case let .success(data, processedText) = contentState else { return }
         let domainData = toDomainMedicalData(data)
-        aiController.saveDocument(data: domainData, processedText: processedText)
+        domain.saveDocument(data: domainData, processedText: processedText)
         showToast(strings.toastAddedToDocuments)
         resetState()
-    }
-
-    private func extractText(from image: UIImage) throws -> String {
-        guard let cgImage = image.cgImage else { return "" }
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        request.usesLanguageCorrection = false
-
-        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-        try handler.perform([request])
-
-        return (request.results ?? []).compactMap { $0.topCandidates(1).first?.string }.joined(separator: "\n")
     }
 
     private func toDomainMedicalData(_ d: AIMedicalData) -> DomainMedicalData {

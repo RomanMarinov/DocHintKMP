@@ -12,8 +12,19 @@ final class OfflineScannerViewModel: ObservableObject {
     @Published var toastMessage: String?
     @Published var previewImage: UIImage?
 
-    private let controller = OfflineScannerController()
-    private let strings = OfflineScannerStrings()
+    private let textExtractor: OfflineScannerTextExtracting
+    private let scanning: OfflineScanningBackend
+    private let strings: OfflineScannerStrings
+
+    init(
+        textExtractor: OfflineScannerTextExtracting = DefaultOfflineScannerTextExtractor(),
+        scanning: OfflineScanningBackend = KotlinOfflineScanningBackend(),
+        strings: OfflineScannerStrings = OfflineScannerStrings()
+    ) {
+        self.textExtractor = textExtractor
+        self.scanning = scanning
+        self.strings = strings
+    }
 
     var supportedTypes: [UTType] {
         [.image, .jpeg, .png, .pdf, .plainText] + [UTType(filenameExtension: "docx")].compactMap { $0 }
@@ -42,7 +53,7 @@ final class OfflineScannerViewModel: ObservableObject {
     }
 
     private func loadPdfPreview(url: URL) async {
-        let img = await OfflineScannerTextExtractor.loadPdfPreview(url: url)
+        let img = await textExtractor.loadPdfPreview(url: url)
         previewImage = img
     }
 
@@ -60,28 +71,26 @@ final class OfflineScannerViewModel: ObservableObject {
         contentState = .loading
 
         let currentFileType = fileType
-        let rawText = await Task.detached(priority: .userInitiated) {
-            OfflineScannerTextExtractor.extract(from: url, fileType: currentFileType)
-        }.value
+        let rawText = await textExtractor.extract(from: url, fileType: currentFileType)
 
         guard let text = rawText, !text.isEmpty else {
             contentState = .error(strings.errorExtractFailed)
             return
         }
 
-        let result = controller.processText(rawText: text)
+        let result = scanning.processText(rawText: text)
 
         if let data = result.data, let processedText = result.processedText {
             contentState = .success(data, processedText: processedText)
-        } else if let errorType = result.errorType {
+        } else if let err = result.error {
             let msg: String
-            switch errorType {
+            switch err {
             case .emptyText: msg = strings.errorEmptyText
             case .tooShort: msg = strings.errorTooShort
             case .noMedicalData: msg = strings.errorNoMedicalData
             case .duplicateDocument: msg = strings.errorDuplicate
             case .parseFailed: msg = strings.errorParseFailed
-            default: msg = strings.errorUnknown
+            case .unknown: msg = strings.errorUnknown
             }
             contentState = .error(msg)
         } else {
@@ -90,7 +99,7 @@ final class OfflineScannerViewModel: ObservableObject {
     }
 
     func saveDocument(data: DomainMedicalData, processedText: String) {
-        controller.saveDocument(data: data, processedText: processedText)
+        scanning.saveDocument(data: data, processedText: processedText)
         toastMessage = strings.toastAddedToDocuments
         resetState()
     }
