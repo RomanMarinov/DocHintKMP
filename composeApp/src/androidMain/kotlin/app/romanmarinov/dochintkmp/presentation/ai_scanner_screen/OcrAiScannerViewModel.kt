@@ -7,15 +7,9 @@ import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.model.OcrAiSca
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.net.Uri
-import app.romanmarinov.dochintkmp.data.local.SecureStorage
-import app.romanmarinov.dochintkmp.data.ocr.PdfPageRenderer
-import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
+import app.romanmarinov.dochintkmp.data.local.ApiKeyStorage
+import app.romanmarinov.dochintkmp.data.ocr.PdfFirstPageRenderer
 import app.romanmarinov.dochintkmp.domain.model.FileType
-import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
-import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
-import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
-import app.romanmarinov.dochintkmp.domain.usecase.ExtractTextFromImageUseCase
-import app.romanmarinov.dochintkmp.domain.usecase.ParseWithLlmUseCase
 import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.model.OcrAiToastType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,16 +19,12 @@ import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 
 class OcrAiScannerViewModel(
-    private val extractTextFromImage: ExtractTextFromImageUseCase,
-    private val extractTextOffline: ExtractTextOfflineUseCase,
-    private val parseWithLlm: ParseWithLlmUseCase,
-    private val checkDuplicate: CheckDuplicateUseCase,
-    private val addResult: AddResultUseCase,
-    private val secureStorage: SecureStorage,
-    private val pdfPageRenderer: PdfPageRenderer
+    private val port: AiScannerPort,
+    private val apiKeyStorage: ApiKeyStorage,
+    private val pdfFirstPageRenderer: PdfFirstPageRenderer,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(OcrAiScannerState(hasSavedKey = secureStorage.apiKey.isNotEmpty()))
+    private val _uiState = MutableStateFlow(OcrAiScannerState(hasSavedKey = apiKeyStorage.apiKey.isNotEmpty()))
     val uiState: StateFlow<OcrAiScannerState> = _uiState.asStateFlow()
 
     fun onEvent(event: OcrAiScannerEvent) {
@@ -43,7 +33,7 @@ class OcrAiScannerViewModel(
             is OcrAiScannerEvent.ProcessImage -> processImage()
             is OcrAiScannerEvent.SaveDocument -> saveDocument()
             is OcrAiScannerEvent.ResetState -> resetState()
-            is OcrAiScannerEvent.RefreshKey -> updateState { it.copy(hasSavedKey = secureStorage.apiKey.isNotEmpty()) }
+            is OcrAiScannerEvent.RefreshKey -> updateState { it.copy(hasSavedKey = apiKeyStorage.apiKey.isNotEmpty()) }
         }
     }
 
@@ -63,7 +53,7 @@ class OcrAiScannerViewModel(
         }
         if (fileType == FileType.PDF) {
             viewModelScope.launch {
-                val bitmap = pdfPageRenderer.renderFirstPageToBitmap(uri)
+                val bitmap = pdfFirstPageRenderer.renderFirstPageToBitmap(uri)
                 updateState { it.copy(pdfPreviewBitmap = bitmap) }
             }
         }
@@ -86,7 +76,7 @@ class OcrAiScannerViewModel(
             updateState { it.copy(toastType = OcrAiToastType.SELECT_IMAGE) }
             return
         }
-        val key = secureStorage.apiKey.trim()
+        val key = apiKeyStorage.apiKey.trim()
         if (key.isEmpty()) {
             updateState { it.copy(toastType = OcrAiToastType.SAVE_API_KEY) }
             return
@@ -97,17 +87,17 @@ class OcrAiScannerViewModel(
             try {
                 val cleanText = when (_uiState.value.selectedFileType) {
                     FileType.PDF, FileType.TXT, FileType.DOCX ->
-                        extractTextOffline(uri, _uiState.value.selectedFileType)
+                        port.extractTextOffline(uri, _uiState.value.selectedFileType)
                     FileType.IMAGE, FileType.PNG ->
-                        extractTextFromImage(uri.toString())
+                        port.extractTextFromImage(uri.toString())
                 }
 
-                if (checkDuplicate(cleanText)) {
+                if (port.isDuplicate(cleanText)) {
                     updateState { it.copy(contentState = OcrAiContentState.Error(OcrAiErrorType.DUPLICATE_DOCUMENT)) }
                     return@launch
                 }
 
-                val result = parseWithLlm(key, cleanText)
+                val result = port.parseWithLlm(key, cleanText)
 
                 updateState { it.copy(contentState = OcrAiContentState.Success(result, cleanText)) }
             } catch (e: UnknownHostException) {
@@ -122,7 +112,7 @@ class OcrAiScannerViewModel(
     private fun saveDocument() {
         val success = _uiState.value.contentState as? OcrAiContentState.Success ?: return
         viewModelScope.launch {
-            addResult(success.parseResult.data, success.cleanText, ResultsRepository.SOURCE_AI)
+            port.addResult(success.parseResult.data, success.cleanText)
             updateState { it.copy(toastType = OcrAiToastType.ADDED_TO_DOCUMENTS) }
             resetState()
         }

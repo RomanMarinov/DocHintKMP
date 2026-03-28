@@ -1,7 +1,7 @@
 package app.romanmarinov.dochintkmp.data.repository
 
 import app.romanmarinov.dochintkmp.data.local.DatabaseDriverFactory
-import app.romanmarinov.dochintkmp.data.local.ProcessedHashCache
+import app.romanmarinov.dochintkmp.data.local.ProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.util.currentTimeMillis
 import app.romanmarinov.dochintkmp.persistence.DocHintDatabase
 import app.romanmarinov.dochintkmp.persistence.MedicalResult
@@ -12,28 +12,42 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 class ResultsRepositoryImpl(
     driverFactory: DatabaseDriverFactory,
-    private val processedHashCache: ProcessedHashCache
+    private val processedHashStorage: ProcessedHashStorage
 ) : ResultsRepository {
 
     private val driver = driverFactory.createDriver()
     private val database = DocHintDatabase(driver)
     private val medicalResultQueries = database.medicalResultQueries
+    private val processedHashMutex = Mutex()
 
     private val _results = MutableStateFlow<List<MedicalData>>(loadAll())
     override val results: StateFlow<List<MedicalData>> = _results.asStateFlow()
 
     override fun isTextAlreadyProcessed(cleanText: String): Boolean {
         val hash = normalizeForHash(cleanText)
-        return processedHashCache.contains(hash)
+        return runBlocking {
+            processedHashMutex.withLock {
+                processedHashStorage.load().contains(hash)
+            }
+        }
     }
 
     override fun markTextAsProcessed(cleanText: String) {
-        processedHashCache.add(normalizeForHash(cleanText))
+        val hash = normalizeForHash(cleanText)
+        runBlocking {
+            processedHashMutex.withLock {
+                val hashes = processedHashStorage.load()
+                processedHashStorage.save(hashes + hash)
+            }
+        }
     }
 
     override fun addResult(data: MedicalData, source: String) {
@@ -60,7 +74,11 @@ class ResultsRepositoryImpl(
 
     override fun clearResults() {
         medicalResultQueries.deleteAll()
-        processedHashCache.clear()
+        runBlocking {
+            processedHashMutex.withLock {
+                processedHashStorage.save(emptySet())
+            }
+        }
         _results.value = emptyList()
     }
 

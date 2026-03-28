@@ -1,13 +1,14 @@
 package app.romanmarinov.dochintkmp.di
 
 import app.romanmarinov.dochintkmp.data.local.DatabaseDriverFactory
-import app.romanmarinov.dochintkmp.data.local.ProcessedHashCache
+import app.romanmarinov.dochintkmp.data.local.ApiKeyStorage
 import app.romanmarinov.dochintkmp.data.local.ProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.local.createProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.local.SecureStorage
 import app.romanmarinov.dochintkmp.data.ocr.DocxTextExtractor
 import app.romanmarinov.dochintkmp.data.ocr.OcrEngine
 import app.romanmarinov.dochintkmp.data.ocr.PdfPageRenderer
+import app.romanmarinov.dochintkmp.data.ocr.PdfFirstPageRenderer
 import app.romanmarinov.dochintkmp.data.ocr.TesseractOcrEngine
 import app.romanmarinov.dochintkmp.data.ocr.paddle.PaddleOcrEngine
 import app.romanmarinov.dochintkmp.data.parser.RuleParser
@@ -26,8 +27,12 @@ import app.romanmarinov.dochintkmp.domain.usecase.ParseWithLlmUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.RemoveResultUseCase
 import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.OcrAiScannerViewModel
+import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.AiScannerPort
+import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.AiScannerPortImpl
 import app.romanmarinov.dochintkmp.presentation.documents_screen.ResultsViewModel
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.OcrOfflineScannerViewModel
+import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.OcrOfflineScannerPort
+import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.OcrOfflineScannerPortImpl
 import app.romanmarinov.dochintkmp.presentation.settings_screen.SettingsViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -41,14 +46,15 @@ val dataModule = module {
             androidContext().filesDir.resolve("processed_hashes.preferences_pb").absolutePath
         }
     }
-    single { ProcessedHashCache(get()) }
     single { SecureStorage(androidContext()) }
+    single<ApiKeyStorage> { get<SecureStorage>() }
 
     single<OcrEngine> { TesseractOcrEngine(androidContext()) }
 
     single { PaddleOcrEngine(androidContext()) }
 
     single { PdfPageRenderer(androidContext()) }
+    single<PdfFirstPageRenderer> { get<PdfPageRenderer>() }
 
     single { DocxTextExtractor(androidContext()) }
 
@@ -83,16 +89,37 @@ val domainModule = module {
 }
 
 val viewModelModule = module {
-    viewModel { OcrAiScannerViewModel(get(), get<ExtractTextOfflineUseCase>(), get(), get(), get(), get(), get()) }
+    factory<AiScannerPort> {
+        AiScannerPortImpl(
+            get<ExtractTextFromImageUseCase>(),
+            get<ExtractTextOfflineUseCase>(),
+            get<ParseWithLlmUseCase>(),
+            get<CheckDuplicateUseCase>(),
+            get<AddResultUseCase>(),
+        )
+    }
+    viewModel {
+        OcrAiScannerViewModel(
+            get<AiScannerPort>(),
+            get<ApiKeyStorage>(),
+            get<PdfFirstPageRenderer>()
+        )
+    }
+
+    factory<OcrOfflineScannerPort> {
+        OcrOfflineScannerPortImpl(
+            get<ExtractTextOfflineUseCase>(),
+            get<CheckDuplicateUseCase>(),
+            get<RuleParser>(),
+            get<AddResultUseCase>(),
+        )
+    }
     viewModel { ResultsViewModel(get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get()) }
     viewModel {
         OcrOfflineScannerViewModel(
-            get<ExtractTextOfflineUseCase>(),
-            get<CheckDuplicateUseCase>(),
-            get<AddResultUseCase>(),
-            get<RuleParser>(),
-            get<PdfPageRenderer>()
+            get<OcrOfflineScannerPort>(),
+            get<PdfFirstPageRenderer>()
         )
     }
 }

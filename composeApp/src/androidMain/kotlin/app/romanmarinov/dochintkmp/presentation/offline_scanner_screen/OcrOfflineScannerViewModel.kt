@@ -6,13 +6,8 @@ import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.Ocr
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineScannerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.romanmarinov.dochintkmp.data.ocr.PdfPageRenderer
-import app.romanmarinov.dochintkmp.data.parser.RuleParser
-import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.domain.model.FileType
-import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
-import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
-import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
+import app.romanmarinov.dochintkmp.data.ocr.PdfFirstPageRenderer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,11 +18,8 @@ import android.util.Log
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineToastType
 
 class OcrOfflineScannerViewModel(
-    private val extractTextOffline: ExtractTextOfflineUseCase,
-    private val checkDuplicate: CheckDuplicateUseCase,
-    private val addResult: AddResultUseCase,
-    private val ruleParser: RuleParser,
-    private val pdfPageRenderer: PdfPageRenderer
+    private val port: OcrOfflineScannerPort,
+    private val pdfFirstPageRenderer: PdfFirstPageRenderer
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OcrOfflineScannerState())
@@ -58,7 +50,7 @@ class OcrOfflineScannerViewModel(
         }
         if (fileType == FileType.PDF) {
             viewModelScope.launch {
-                val bitmap = pdfPageRenderer.renderFirstPageToBitmap(uri)
+                val bitmap = pdfFirstPageRenderer.renderFirstPageToBitmap(uri)
                 _uiState.update { it.copy(pdfPreviewBitmap = bitmap) }
             }
         }
@@ -85,12 +77,12 @@ class OcrOfflineScannerViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(contentState = OcrOfflineContentState.Loading) }
             try {
-                val cleanText = extractTextOffline(uri, state.fileType)
-                if (checkDuplicate(cleanText)) {
+                val cleanText = port.extractTextOffline(uri, state.fileType)
+                if (port.isDuplicate(cleanText)) {
                     _uiState.update { it.copy(contentState = OcrOfflineContentState.Error(OcrOfflineErrorType.DUPLICATE_DOCUMENT)) }
                     return@launch
                 }
-                val data = ruleParser.parse(cleanText)
+                val data = port.parse(cleanText)
                 _uiState.update { it.copy(contentState = OcrOfflineContentState.Success(data, cleanText)) }
             } catch (e: Exception) {
                 Log.e("OcrOfflineScanner", "processFile", e)
@@ -102,7 +94,7 @@ class OcrOfflineScannerViewModel(
     private fun saveDocument() {
         val success = _uiState.value.contentState as? OcrOfflineContentState.Success ?: return
         viewModelScope.launch {
-            addResult(success.data, success.processedText, ResultsRepository.SOURCE_OFFLINE)
+            port.addResult(success.data, success.processedText)
             _uiState.update { it.copy(toastType = OcrOfflineToastType.ADDED_TO_DOCUMENTS) }
             resetState()
         }

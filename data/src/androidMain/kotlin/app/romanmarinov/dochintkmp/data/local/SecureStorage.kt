@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 
-class SecureStorage(context: Context) {
+class SecureStorage(context: Context) : ApiKeyStorage {
 
     private val prefs = EncryptedSharedPreferences.create(
         "secure_prefs",
@@ -14,7 +14,7 @@ class SecureStorage(context: Context) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    var apiKey: String
+    override var apiKey: String
         get() = prefs.getString(KEY_API, "") ?: ""
         set(value) = prefs.edit().putString(KEY_API, value).apply()
 

@@ -8,9 +8,9 @@ import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class PdfPageRenderer(private val context: Context) {
+class PdfPageRenderer(private val context: Context) : PdfFirstPageRenderer {
 
-    suspend fun renderFirstPageToBitmap(uri: Uri): Bitmap? = withContext(Dispatchers.IO) {
+    override suspend fun renderFirstPageToBitmap(uri: Uri): Bitmap? = withContext(Dispatchers.IO) {
         try {
             val fd = context.contentResolver.openFileDescriptor(uri, "r") ?: return@withContext null
             fd.use { descriptor ->

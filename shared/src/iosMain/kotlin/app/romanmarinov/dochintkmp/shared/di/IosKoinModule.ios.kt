@@ -1,7 +1,6 @@
 package app.romanmarinov.dochintkmp.shared.di
 
 import app.romanmarinov.dochintkmp.data.local.DatabaseDriverFactory
-import app.romanmarinov.dochintkmp.data.local.ProcessedHashCache
 import app.romanmarinov.dochintkmp.data.local.ProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.local.createProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.local.getProcessedHashesDataStorePath
@@ -19,7 +18,6 @@ import org.koin.dsl.module
 actual val iosDocumentsModule: Module = module {
     single { DatabaseDriverFactory() }
     single<ProcessedHashStorage> { createProcessedHashStorage(::getProcessedHashesDataStorePath) }
-    single { ProcessedHashCache(get()) }
     single<ResultsRepository> { ResultsRepositoryImpl(get(), get()) }
     factory { ObserveResultsUseCase(get()) }
     factory { RemoveResultUseCase(get()) }
