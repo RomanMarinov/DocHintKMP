@@ -5,30 +5,52 @@ import Shared
 
 struct DocumentsResultCard: View {
     let data: DomainMedicalData
+    var selectionMode: Bool = false
+    var selected: Bool = false
+    let onToggleSelect: () -> Void
     let onDelete: () -> Void
     private let strings = DocumentsStrings()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(strings.labelDocumentType)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    Text(data.documentType ?? strings.analysisDefault)
-                        .font(.headline)
-                        .lineLimit(1)
-                    if let date = data.analysisDate {
-                        Text(date)
-                            .font(.caption)
+                HStack(alignment: .top, spacing: 8) {
+                    if selectionMode {
+                        Button(action: onToggleSelect) {
+                            Image(systemName: selected ? "checkmark.square.fill" : "square")
+                                .font(.title3)
+                                .foregroundStyle(selected ? Color.accentColor : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(selected ? "Selected" : "Not selected")
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(strings.labelDocumentType)
+                            .font(.caption2)
                             .foregroundStyle(.secondary)
+                        Text(data.documentType ?? strings.analysisDefault)
+                            .font(.headline)
+                            .lineLimit(1)
+                        if let date = data.analysisDate {
+                            Text(date)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if selectionMode {
+                            onToggleSelect()
+                        }
                     }
                 }
-                Spacer()
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.body)
-                        .foregroundStyle(.red)
+                if !selectionMode {
+                    Button(action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.body)
+                            .foregroundStyle(.red)
+                    }
                 }
             }
 

@@ -55,6 +55,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
+import app.romanmarinov.dochintkmp.presentation.ui.AppTopBar
 import app.romanmarinov.dochintkmp.presentation.settings_screen.model.SettingsEffect
 import app.romanmarinov.dochintkmp.presentation.settings_screen.model.SettingsEvent
 import app.romanmarinov.dochintkmp.presentation.settings_screen.model.SettingsState
@@ -81,19 +82,10 @@ fun SettingsScreen(viewModel: SettingsViewModel = koinViewModel()) {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp)
-        ) {
-            Text(stringResource(R.string.screen_settings), style = MaterialTheme.typography.headlineLarge)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                stringResource(R.string.settings_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        AppTopBar(
+            title = stringResource(R.string.screen_settings),
+            subtitle = stringResource(R.string.settings_subtitle)
+        )
 
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
             Spacer(modifier = Modifier.height(16.dp))

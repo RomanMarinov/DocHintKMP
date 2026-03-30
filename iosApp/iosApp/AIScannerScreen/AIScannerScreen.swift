@@ -9,7 +9,7 @@ struct AIScannerScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                headerView
+                topBar
                 contentSection
             }
         }
@@ -25,13 +25,8 @@ struct AIScannerScreen: View {
         .overlay(alignment: .bottom) { toastOverlay }
     }
 
-    private var headerView: some View {
-        Text(strings.screenTitle)
-            .font(.largeTitle)
-            .fontWeight(.bold)
-            .padding(.horizontal, 24)
-            .padding(.top, 24)
-            .padding(.bottom, 8)
+    private var topBar: some View {
+        AppTopBar(title: strings.screenTitle)
     }
 
     @ViewBuilder
@@ -50,6 +45,7 @@ struct AIScannerScreen: View {
             }
         }
         .padding(.horizontal, 16)
+        .padding(.top, 16)
         .padding(.bottom, 16)
     }
 
@@ -142,13 +138,15 @@ struct AIScannerScreen: View {
                     Text(strings.recognizeDocument)
                 }
             }
-            .font(.subheadline)
+            .font(AppProminentActionMetrics.labelFont)
             .fontWeight(.semibold)
             .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .padding(.horizontal, AppProminentActionMetrics.labelHorizontalPadding)
+            .padding(.vertical, AppProminentActionMetrics.labelVerticalPadding)
         }
         .buttonStyle(.borderedProminent)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .buttonBorderShape(.roundedRectangle(radius: 16))
+        .controlSize(.regular)
         .disabled(!viewModel.hasSavedKey || viewModel.contentState.isLoading)
     }
 

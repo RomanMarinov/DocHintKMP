@@ -3,18 +3,27 @@ import Shared
 
 /// Documents screen — UI only.
 /// Business logic in DocumentsViewModel; uses shared KMP domain layer (same as Android).
-struct DocumentsView: View {
+struct DocumentsScreen: View {
     @StateObject private var viewModel = DocumentsViewModel()
     private let strings = DocumentsStrings()
 
+    /// Соответствует Android `DocumentsListBottomInsetFab` (список не уезжает под FAB).
+    private let listBottomInsetFab: CGFloat = 88
+
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            Divider()
-            if viewModel.results.isEmpty {
-                emptyState
-            } else {
-                resultsList
+        ZStack(alignment: .bottomTrailing) {
+            VStack(spacing: 0) {
+                topBar
+                if viewModel.results.isEmpty {
+                    emptyState
+                } else {
+                    resultsList
+                }
+            }
+            if !viewModel.results.isEmpty {
+                documentsFab
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 16)
             }
         }
         .background(Color(.systemGroupedBackground))
@@ -44,28 +53,65 @@ struct DocumentsView: View {
         }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(strings.screenDocuments)
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            HStack {
-                Text(viewModel.results.isEmpty ? strings.noSavedAnalyses : viewModel.resultsCountText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                if !viewModel.results.isEmpty {
+    private var documentsSubtitle: String {
+        if viewModel.results.isEmpty {
+            strings.noSavedAnalyses
+        } else if viewModel.selectionMode {
+            strings.selectedCount(viewModel.selectedIndices.count)
+        } else {
+            viewModel.resultsCountText
+        }
+    }
+
+    private var topBar: some View {
+        AppTopBar(title: strings.screenDocuments, subtitle: documentsSubtitle) {
+            if !viewModel.results.isEmpty {
+                if viewModel.selectionMode {
+                    Button(strings.selectionCancel) {
+                        viewModel.exitSelectionMode()
+                    }
+                    .font(.body)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.accentColor)
+                } else {
                     Button(strings.allClearData) {
                         viewModel.setShowClearDialog(true)
                     }
-                    .buttonStyle(.bordered)
+                    .font(.body)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.red)
                 }
             }
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 24)
-        .padding(.bottom, 16)
-        .background(Color(.systemBackground))
+    }
+
+    private var fabPickPhase: Bool {
+        viewModel.selectionMode && viewModel.selectedIndices.isEmpty
+    }
+
+    private var fabTitle: String {
+        if !viewModel.selectionMode { return strings.actionSend }
+        if fabPickPhase { return strings.fabPickFirst }
+        return "\(strings.share) (\(viewModel.selectedIndices.count))"
+    }
+
+    private var documentsFab: some View {
+        Button {
+            if !viewModel.selectionMode {
+                viewModel.enterSelectionMode()
+            } else if !viewModel.selectedIndices.isEmpty {
+                // Экспорт / share sheet — позже, как на Android.
+            }
+        } label: {
+            Label(fabTitle, systemImage: "square.and.arrow.up")
+                .labelStyle(.titleAndIcon)
+                .font(AppProminentActionMetrics.labelFont)
+                .padding(.horizontal, AppProminentActionMetrics.labelHorizontalPadding)
+                .padding(.vertical, AppProminentActionMetrics.labelVerticalPadding)
+        }
+        .buttonStyle(.borderedProminent)
+        .buttonBorderShape(.capsule)
+        .controlSize(.regular)
     }
 
     private var emptyState: some View {
@@ -94,12 +140,18 @@ struct DocumentsView: View {
         ScrollView {
             LazyVStack(spacing: 12) {
                 ForEach(Array(viewModel.results.enumerated()), id: \.offset) { index, data in
-                    DocumentsResultCard(data: data) {
-                        viewModel.setDeleteIndex(index)
-                    }
+                    DocumentsResultCard(
+                        data: data,
+                        selectionMode: viewModel.selectionMode,
+                        selected: viewModel.selectedIndices.contains(index),
+                        onToggleSelect: { viewModel.toggleSelection(at: index) },
+                        onDelete: { viewModel.setDeleteIndex(index) }
+                    )
                 }
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, listBottomInsetFab)
         }
     }
 }
@@ -108,6 +160,6 @@ struct DocumentsView: View {
 
 struct DocumentsView_Previews: PreviewProvider {
     static var previews: some View {
-        DocumentsView()
+        DocumentsScreen()
     }
 }

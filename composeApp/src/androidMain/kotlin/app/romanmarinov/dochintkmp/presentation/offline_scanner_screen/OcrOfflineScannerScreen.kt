@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -63,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
+import app.romanmarinov.dochintkmp.presentation.ui.AppTopBar
 import app.romanmarinov.dochintkmp.domain.model.FileType
 import app.romanmarinov.dochintkmp.domain.model.MedicalData
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineContentState
@@ -105,14 +107,12 @@ fun OcrOfflineScannerScreen(viewModel: OcrOfflineScannerViewModel = koinViewMode
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        Text(
-            text = stringResource(R.string.screen_offline),
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp)
-        )
+        AppTopBar(title = stringResource(R.string.screen_offline))
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         DocumentAttachedCard(
             uiState = uiState,

@@ -1,1439 +1,1358 @@
 {
-  "sourceLanguage" : "ru",
-  "strings" : {
-    "add_api_key_hint" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add API key in Settings"
+  "sourceLanguage": "ru",
+  "strings": {
+    "add_api_key_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add API key in Settings"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Добавьте API ключ в Настройках"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавьте API ключ в Настройках"
           }
         }
       }
     },
-    "ai_content_desc_remove" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove"
+    "ai_content_desc_remove": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Убрать"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Убрать"
           }
         }
       }
     },
-    "ai_data_extracted" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Data extracted"
+    "ai_data_extracted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data extracted"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Данные извлечены"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Данные извлечены"
           }
         }
       }
     },
-    "ai_error_no_network" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No network connection"
+    "ai_error_no_network": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No network connection"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нет подключения к сети"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет подключения к сети"
           }
         }
       }
     },
-    "ai_error_save_key" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save API key in Settings"
+    "ai_error_save_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save API key in Settings"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сохраните API ключ в Настройках"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохраните API ключ в Настройках"
           }
         }
       }
     },
-    "ai_error_select_image" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select an image"
+    "ai_error_select_image": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select an image"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Выберите изображение"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите изображение"
           }
         }
       }
     },
-    "ai_pipeline_cleanup" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Text cleanup…"
+    "ai_pipeline_cleanup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text cleanup…"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Очистка текста…"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистка текста…"
           }
         }
       }
     },
-    "ai_pipeline_detect" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detecting analysis type…"
+    "ai_pipeline_detect": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detecting analysis type…"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Определение типа анализа…"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Определение типа анализа…"
           }
         }
       }
     },
-    "ai_pipeline_llm" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extracting indicators (LLM)…"
+    "ai_pipeline_llm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extracting indicators (LLM)…"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Извлечение показателей (LLM)…"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Извлечение показателей (LLM)…"
           }
         }
       }
     },
-    "ai_pipeline_ocr" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OCR recognition…"
+    "ai_pipeline_ocr": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR recognition…"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OCR распознавание…"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR распознавание…"
           }
         }
       }
     },
-    "ai_processing" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Processing…"
+    "ai_processing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Processing…"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Обработка…"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обработка…"
           }
         }
       }
     },
-    "ai_recognize_document" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recognize document"
+    "ai_recognize_document": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recognize document"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Распознать документ"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Распознать документ"
           }
         }
       }
     },
-    "ai_scanner_add_key" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add key"
+    "ai_scanner_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI Scanner"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Добавить ключ"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI Сканер"
           }
         }
       }
     },
-    "ai_scanner_placeholder" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Placeholder UI (no logic)."
+    "ai_select_image": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select image"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Заглушка UI (без логики)."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите изображение"
           }
         }
       }
     },
-    "ai_scanner_results_hint" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Results will appear here after KMP integration."
+    "ai_supported_formats": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPG, PNG, PDF"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Результаты появятся здесь после интеграции KMP."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "JPG, PNG, PDF"
           }
         }
       }
     },
-    "ai_scanner_scan_document" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scan document"
+    "ai_view_result": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View result"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сканировать документ"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Посмотреть результат"
           }
         }
       }
     },
-    "ai_scanner_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AI Scanner"
+    "dialog_cancel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AI Сканер"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отмена"
           }
         }
       }
     },
-    "ai_scanner_upload_hint" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Upload an image and tap the recognize button."
+    "dialog_confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Загрузите изображение и нажмите кнопку распознавания."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить"
           }
         }
       }
     },
-    "ai_select_image" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select image"
+    "documents_action_send": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Выберите изображение"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отправить"
           }
         }
       }
     },
-    "ai_supported_formats" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "JPG, PNG, PDF"
+    "documents_analysis_default": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "JPG, PNG, PDF"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Анализ"
           }
         }
       }
     },
-    "ai_view_result" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View result"
+    "documents_analysis_many": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d analyses"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Посмотреть результат"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d анализов"
           }
         }
       }
     },
-    "common_save" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save"
+    "documents_analysis_one": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d analysis"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сохранить"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d анализ"
           }
         }
       }
     },
-    "dialog_cancel" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel"
+    "documents_clear_all": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отмена"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить"
           }
         }
       }
     },
-    "dialog_confirm" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete"
+    "documents_dialog_clear_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All saved analyses will be deleted."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Удалить"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все сохранённые анализы будут удалены."
           }
         }
       }
     },
-    "documents_analysis_default" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analysis"
+    "documents_dialog_clear_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear all documents?"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Анализ"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить все документы?"
           }
         }
       }
     },
-    "documents_analysis_few" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d analyses"
+    "documents_dialog_delete_message": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The analysis will be removed from the documents list."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d анализа"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Анализ будет удалён из списка документов."
           }
         }
       }
     },
-    "documents_analysis_many" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d analyses"
+    "documents_dialog_delete_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete document?"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d анализов"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить документ?"
           }
         }
       }
     },
-    "documents_analysis_one" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d analysis"
+    "documents_empty_subtitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to Scanner tab\nto upload a blood test"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d анализ"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перейдите во вкладку Сканер,\nчтобы загрузить анализ крови"
           }
         }
       }
     },
-    "documents_clear_all" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear"
+    "documents_empty_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empty"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Очистить"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока пусто"
           }
         }
       }
     },
-    "documents_dialog_clear_message" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "All saved analyses will be deleted."
+    "documents_fab_pick_first": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick from the list"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Все сохранённые анализы будут удалены."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите в списке"
           }
         }
       }
     },
-    "documents_dialog_clear_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clear all documents?"
+    "documents_indicators_format": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d indic."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Очистить все документы?"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d показат."
           }
         }
       }
     },
-    "documents_dialog_delete_message" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The analysis will be removed from the documents list."
+    "documents_no_saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No saved analyses"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Анализ будет удалён из списка документов."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет сохранённых анализов"
           }
         }
       }
     },
-    "documents_dialog_delete_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete document?"
+    "documents_screen_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Documents"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Удалить документ?"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Документы"
           }
         }
       }
     },
-    "documents_empty_subtitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Go to Scanner tab\nto upload a blood test"
+    "documents_selected_count": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selected: %d"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Перейдите во вкладку Сканер,\nчтобы загрузить анализ крови"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрано: %d"
           }
         }
       }
     },
-    "documents_empty_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empty"
+    "documents_selection_cancel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пока пусто"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отмена"
           }
         }
       }
     },
-    "documents_indicators_format" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d indic."
+    "documents_share": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d показат."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поделиться"
           }
         }
       }
     },
-    "documents_no_saved" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No saved analyses"
+    "error_docx_unsupported": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DOCX is not supported on iOS yet. Use PDF or image."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нет сохранённых анализов"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DOCX пока не поддерживается на iOS. Используйте PDF или изображение."
           }
         }
       }
     },
-    "documents_screen_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Documents"
+    "error_duplicate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This document is already added"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Документы"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Такой документ уже добавлен"
           }
         }
       }
     },
-    "error_docx_unsupported" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DOCX is not supported on iOS yet. Use PDF or image."
+    "error_empty_text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Empty text"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DOCX пока не поддерживается на iOS. Используйте PDF или изображение."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пустой текст"
           }
         }
       }
     },
-    "error_duplicate" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "This document is already added"
+    "error_extract_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not extract text from document"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Такой документ уже добавлен"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось извлечь текст из документа"
           }
         }
       }
     },
-    "error_empty_text" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Empty text"
+    "error_no_medical_data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Document does not contain medical data (blood tests, dates, indicators)."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Пустой текст"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Документ не содержит медицинских данных (анализов крови, дат, показателей)."
           }
         }
       }
     },
-    "error_extract_failed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not extract text from document"
+    "error_parse_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not extract indicators. Try AI Scanner."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не удалось извлечь текст из документа"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось извлечь показатели. Попробуйте AI Сканер."
           }
         }
       }
     },
-    "error_no_medical_data" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Document does not contain medical data (blood tests, dates, indicators)."
+    "error_too_short": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too little text. Make sure the document is medical."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Документ не содержит медицинских данных (анализов крови, дат, показателей)."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Слишком мало текста. Убедитесь, что документ — медицинский."
           }
         }
       }
     },
-    "error_parse_failed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not extract indicators. Try AI Scanner."
+    "error_unknown": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown error"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не удалось извлечь показатели. Попробуйте AI Сканер."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неизвестная ошибка"
           }
         }
       }
     },
-    "error_too_short" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Too little text. Make sure the document is medical."
+    "file_type_docx": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DOCX"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Слишком мало текста. Убедитесь, что документ — медицинский."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DOCX"
           }
         }
       }
     },
-    "error_unknown" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Unknown error"
+    "file_type_image": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Неизвестная ошибка"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изображение"
           }
         }
       }
     },
-    "file_type_docx" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DOCX"
+    "file_type_pdf": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "DOCX"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PDF"
           }
         }
       }
     },
-    "file_type_image" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Image"
+    "file_type_txt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TXT"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Изображение"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "TXT"
           }
         }
       }
     },
-    "file_type_pdf" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PDF"
+    "label_analysis_date": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis date"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PDF"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дата анализа"
           }
         }
       }
     },
-    "file_type_txt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TXT"
+    "label_doctor": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doctor"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "TXT"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Врач"
           }
         }
       }
     },
-    "label_analysis_date" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Analysis date"
+    "label_document_type": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Document type"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дата анализа"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тип документа"
           }
         }
       }
     },
-    "label_doctor" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Doctor"
+    "label_institution": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Institution"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Врач"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Учреждение"
           }
         }
       }
     },
-    "label_document_type" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Document type"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тип документа"
-          }
-        }
-      }
-    },
-    "label_institution" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Institution"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Учреждение"
-          }
-        }
-      }
-    },
-    "offline_indicators_count" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d indicators"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d показателей"
-          }
-        }
-      }
-    },
-    "offline_instructions" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select a file PNG, JPG, PDF, TXT, DOCX."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Выберите файл PNG, JPG, PDF, TXT, DOCX"
-          }
-        }
-      }
+    "Not selected": {
+      "comment": "An accessibility label for a button that deselects an item.",
+      "isCommentAutoGenerated": true
     },
-    "offline_loading_cleanup" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Text cleanup…"
+    "offline_indicators_count": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d indicators"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Очистка текста…"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d показателей"
           }
         }
       }
     },
-    "offline_loading_ocr" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OCR recognition…"
+    "offline_instructions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a file PNG, JPG, PDF, TXT, DOCX."
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Распознавание OCR…"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите файл PNG, JPG, PDF, TXT, DOCX"
           }
         }
       }
     },
-    "offline_pipeline_extract" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extract by rules"
+    "offline_loading_cleanup": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text cleanup…"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Извлечение по правилам"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистка текста…"
           }
         }
       }
     },
-    "offline_recognize" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recognize"
+    "offline_loading_ocr": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OCR recognition…"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Распознать"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Распознавание OCR…"
           }
         }
       }
     },
-    "offline_save_to_documents" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save to Documents"
+    "offline_pipeline_extract": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extract by rules"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сохранить в Документы"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Извлечение по правилам"
           }
         }
       }
     },
-    "offline_screen_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Offline"
+    "offline_recognize": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recognize"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Оффлайн"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Распознать"
           }
         }
       }
     },
-    "offline_select_file" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select file"
+    "offline_save_to_documents": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save to Documents"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Выбрать файл"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранить в Документы"
           }
         }
       }
     },
-    "offline_supported_formats" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PNG, JPG, PDF, TXT, DOCX"
+    "offline_screen_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Offline"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PNG, JPG, PDF, TXT, DOCX"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оффлайн сканер"
           }
         }
       }
     },
-    "offline_view_result" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "View result"
+    "offline_select_file": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select file"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Посмотреть результат"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать файл"
           }
         }
       }
     },
-    "settings_api_key_label" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OpenRouter API Key"
+    "offline_supported_formats": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PNG, JPG, PDF, TXT, DOCX"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OpenRouter API Key"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "PNG, JPG, PDF, TXT, DOCX"
           }
         }
       }
     },
-    "settings_api_key_placeholder" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter API key"
+    "offline_view_result": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View result"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Введите API key"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Посмотреть результат"
           }
         }
       }
     },
-    "settings_delete_key" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Delete"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Удалить"
-          }
-        }
-      }
+    "Selected": {
+      "comment": "An accessibility label for a \"Selected\" button.",
+      "isCommentAutoGenerated": true
     },
-    "settings_key_saved" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Key saved"
+    "settings_api_key_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenRouter API Key"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ключ сохранён"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenRouter API Key"
           }
         }
       }
     },
-    "settings_key_status" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Key status"
+    "settings_api_key_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter API key"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Статус ключа"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Введите API key"
           }
         }
       }
     },
-    "settings_openrouter_key" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OpenRouter key"
+    "settings_delete_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ключ OpenRouter"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить"
           }
         }
       }
     },
-    "settings_save_key" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Save key"
+    "settings_key_saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key saved"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сохранить ключ"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ключ сохранён"
           }
         }
       }
     },
-    "settings_section_api_key" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API key"
+    "settings_key_status": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key status"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API ключ"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статус ключа"
           }
         }
       }
     },
-    "settings_spent_format" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "$%@"
+    "settings_save_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save key"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "$%@"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранить ключ"
           }
         }
       }
     },
-    "settings_spent_label" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spent"
+    "settings_section_api_key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API key"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Потрачено"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API ключ"
           }
         }
       }
     },
-    "settings_stub_hint" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Placeholder UI. Save logic will appear after KMP integration."
+    "settings_spent_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spent"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Заглушка UI. Логика сохранения появится после интеграции KMP."
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Потрачено"
           }
         }
       }
     },
-    "settings_subtitle" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API key and monitoring"
+    "settings_subtitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API key and monitoring"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API ключ и мониторинг"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API ключ и мониторинг"
           }
         }
       }
     },
-    "settings_tariff_free" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Free"
+    "settings_tariff_free": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Free"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free"
           }
         }
       }
     },
-    "settings_tariff_label" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tariff"
+    "settings_tariff_label": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tariff"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тариф"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тариф"
           }
         }
       }
     },
-    "settings_tariff_paid" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paid"
+    "settings_tariff_paid": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paid"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paid"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paid"
           }
         }
       }
     },
-    "settings_title" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
+    "settings_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Настройки"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки"
           }
         }
       }
     },
-    "settings_toast_deleted" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API key deleted"
+    "settings_toast_deleted": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API key deleted"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API ключ удалён"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API ключ удалён"
           }
         }
       }
     },
-    "settings_toast_saved" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API key saved"
+    "settings_toast_saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API key saved"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "API ключ сохранён"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API ключ сохранён"
           }
         }
       }
     },
-    "tab_ai_scanner" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AI Scanner"
+    "tab_ai_scanner": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI Scanner"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "AI Сканер"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI Сканер"
           }
         }
       }
     },
-    "tab_documents" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Documents"
+    "tab_documents": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Documents"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Документы"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Документы"
           }
         }
       }
     },
-    "tab_offline" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Offline"
+    "tab_offline": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Offline"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Оффлайн"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оффлайн"
           }
         }
       }
     },
-    "tab_settings" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Settings"
+    "tab_settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Настройки"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки"
           }
         }
       }
     },
-    "toast_added_to_documents" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Added to Documents"
+    "toast_added_to_documents": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added to Documents"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Добавлено в Документы"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавлено в Документы"
           }
         }
       }
     },
-    "toast_file_open_failed" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not open file"
+    "toast_file_open_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not open file"
           }
         },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Не удалось открыть файл"
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось открыть файл"
           }
         }
       }
     }
   },
-  "version" : "1.0"
+  "version": "1.1"
 }

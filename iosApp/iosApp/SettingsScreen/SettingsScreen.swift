@@ -10,21 +10,14 @@ struct SettingsScreen: View {
     /// Высота поля ввода ключа
     private let apiKeyFieldHeight: CGFloat = 56
 
+    private var topBar: some View {
+        AppTopBar(title: strings.screenTitle, subtitle: strings.subtitle)
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                // Header
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(strings.screenTitle)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    Text(strings.subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 24)
-                .padding(.bottom, 8)
+                topBar
 
                 VStack(alignment: .leading, spacing: 16) {  
                     // Section: API key

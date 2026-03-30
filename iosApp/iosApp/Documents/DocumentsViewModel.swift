@@ -9,6 +9,8 @@ final class DocumentsViewModel: ObservableObject {
     @Published var results: [DomainMedicalData] = []
     @Published var deleteIndex: Int?
     @Published var showClearDialog = false
+    @Published var selectionMode = false
+    @Published var selectedIndices: Set<Int> = []
 
     private let controller = DocumentListController()
     private let strings = DocumentsStrings()
@@ -27,14 +29,36 @@ final class DocumentsViewModel: ObservableObject {
         }
     }
 
+    func exitSelectionMode() {
+        selectionMode = false
+        selectedIndices = []
+    }
+
+    func enterSelectionMode() {
+        selectionMode = true
+        selectedIndices = []
+    }
+
+    func toggleSelection(at index: Int) {
+        var next = selectedIndices
+        if next.contains(index) {
+            next.remove(index)
+        } else {
+            next.insert(index)
+        }
+        selectedIndices = next
+    }
+
     func removeAt(index: Int) {
         controller.removeAt(index: Int32(index))
         deleteIndex = nil
+        exitSelectionMode()
     }
 
     func clearResults() {
         controller.clearResults()
         showClearDialog = false
+        exitSelectionMode()
     }
 
     func setDeleteIndex(_ index: Int?) {

@@ -13,7 +13,7 @@ struct ContentView: View {
                     Label(String(localized: "tab_offline"), systemImage: "doc.text.viewfinder")
                 }
 
-            DocumentsView()
+            DocumentsScreen()
                 .tabItem {
                     Label(String(localized: "tab_documents"), systemImage: "folder")
                 }

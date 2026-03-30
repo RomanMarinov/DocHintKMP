@@ -17,18 +17,26 @@ struct DocumentsStrings {
     var dialogClearMessage: String { String(localized: "documents_dialog_clear_message") }
     var dialogConfirm: String { String(localized: "dialog_confirm") }
     var dialogCancel: String { String(localized: "dialog_cancel") }
+    var actionSend: String { String(localized: "documents_action_send") }
+    var selectionCancel: String { String(localized: "documents_selection_cancel") }
+    var share: String { String(localized: "documents_share") }
+    var fabPickFirst: String { String(localized: "documents_fab_pick_first") }
 
     func indicatorsFormat(_ n: Int32) -> String {
         String(format: String(localized: "documents_indicators_format"), n)
     }
 
+    func selectedCount(_ n: Int) -> String {
+        String(format: String(localized: "documents_selected_count"), n)
+    }
+
     func resultsCountText(_ n: Int) -> String {
-        let format: String
-        switch n {
-        case 1: format = String(localized: "documents_analysis_one")
-        case 2...4: format = String(localized: "documents_analysis_few")
-        default: format = String(localized: "documents_analysis_many")
+        if Locale.current.language.languageCode?.identifier == "ru" {
+            return RussianQuantity.analysisCountLabel(count: n)
         }
-        return String(format: format, n)
+        if n == 1 {
+            return String(format: String(localized: "documents_analysis_one"), n)
+        }
+        return String(format: String(localized: "documents_analysis_many"), n)
     }
 }

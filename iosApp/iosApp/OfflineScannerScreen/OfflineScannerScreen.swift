@@ -5,16 +5,16 @@ struct OfflineScannerScreen: View {
     @StateObject private var viewModel = OfflineScannerViewModel()
     private let strings = OfflineScannerStrings()
 
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(strings.screenTitle)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 24)
+    private var topBar: some View {
+        AppTopBar(title: strings.screenTitle)
+    }
 
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                topBar
+
+                VStack(alignment: .leading, spacing: 16) {
                     documentCard
                         .padding(.horizontal, 16)
 
@@ -26,25 +26,26 @@ struct OfflineScannerScreen: View {
                             .padding(.bottom, 24)
                     }
                 }
+                .padding(.top, 16)
             }
-            .background(Color(.systemGroupedBackground))
-            .fileImporter(
-                isPresented: $viewModel.showFilePicker,
-                allowedContentTypes: viewModel.supportedTypes,
-                allowsMultipleSelection: false
-            ) { result in
-                viewModel.handleFilePick(result: result)
-            }
-            .overlay(alignment: .bottom) {
-                if let msg = viewModel.toastMessage {
-                    OfflineToastView(message: msg)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                withAnimation { viewModel.dismissToast() }
-                            }
+        }
+        .background(Color(.systemGroupedBackground))
+        .fileImporter(
+            isPresented: $viewModel.showFilePicker,
+            allowedContentTypes: viewModel.supportedTypes,
+            allowsMultipleSelection: false
+        ) { result in
+            viewModel.handleFilePick(result: result)
+        }
+        .overlay(alignment: .bottom) {
+            if let msg = viewModel.toastMessage {
+                OfflineToastView(message: msg)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            withAnimation { viewModel.dismissToast() }
                         }
-                }
+                    }
             }
         }
     }
@@ -138,13 +139,15 @@ struct OfflineScannerScreen: View {
                     Text(strings.recognize)
                 }
             }
-            .font(.subheadline)
+            .font(AppProminentActionMetrics.labelFont)
             .fontWeight(.semibold)
             .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .padding(.horizontal, AppProminentActionMetrics.labelHorizontalPadding)
+            .padding(.vertical, AppProminentActionMetrics.labelVerticalPadding)
         }
         .buttonStyle(.borderedProminent)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .buttonBorderShape(.roundedRectangle(radius: 16))
+        .controlSize(.regular)
         .disabled(viewModel.contentState.isLoading)
     }
 

@@ -47,12 +47,6 @@
 
     <string name="screen_documents">Документы</string>
     <string name="no_saved_analyses">Нет сохранённых анализов</string>
-    <plurals name="results_count">
-        <item quantity="one">%d анализ</item>
-        <item quantity="few">%d анализа</item>
-        <item quantity="many">%d анализов</item>
-        <item quantity="other">%d анализов</item>
-    </plurals>
     <string name="all_clear_data">Очистить</string>
     <string name="empty_title">Пока пусто</string>
     <string name="empty_subtitle">Перейдите во вкладку Сканер,\nчтобы загрузить анализ крови</string>
@@ -66,6 +60,14 @@
     <string name="dialog_confirm">Удалить</string>
     <string name="dialog_cancel">Отмена</string>
 
+    <string name="documents_action_send">Отправить</string>
+    <string name="documents_selection_cancel">Отмена</string>
+    <string name="documents_selected_count">Выбрано: %d</string>
+    <string name="documents_share">Поделиться</string>
+    <string name="documents_share_subtitle">Системное меню: Bluetooth, мессенджеры, файлы…</string>
+    <string name="documents_share_preview_note">Дальше здесь будет экспорт (PDF / несколько файлов)</string>
+    <string name="content_desc_share">Поделиться результатами</string>
+    <string name="documents_fab_pick_first">Выберите в списке</string>
     <string name="screen_settings">Настройки</string>
     <string name="settings_subtitle">API ключ и мониторинг</string>
     <string name="section_api_key">API ключ</string>
