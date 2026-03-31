@@ -83,7 +83,12 @@ fun ResultCard(
     onToggleSelect: () -> Unit,
     onDelete: () -> Unit
 ) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(if (selectionMode) Modifier.clickable(onClick = onToggleSelect) else Modifier),
+        shape = RoundedCornerShape(16.dp)
+    ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -105,7 +110,6 @@ fun ResultCard(
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .then(if (selectionMode) Modifier.clickable(onClick = onToggleSelect) else Modifier)
                     ) {
                         Text(
                             stringResource(R.string.label_document_type),

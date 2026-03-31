@@ -14,13 +14,18 @@ struct DocumentsScreen: View {
         ZStack(alignment: .bottomTrailing) {
             VStack(spacing: 0) {
                 topBar
-                if viewModel.results.isEmpty {
-                    emptyState
+                tabBar
+                if viewModel.selectedTab == .received {
+                    receivedTabContent
                 } else {
-                    resultsList
+                    if viewModel.currentItems.isEmpty {
+                        emptyState(text: strings.noSavedAnalyses)
+                    } else {
+                        resultsList
+                    }
                 }
             }
-            if !viewModel.results.isEmpty {
+            if viewModel.selectedTab == .mine && !viewModel.ownItems.isEmpty {
                 documentsFab
                     .padding(.trailing, 16)
                     .padding(.bottom, 16)
@@ -34,7 +39,11 @@ struct DocumentsScreen: View {
             Button(strings.dialogCancel, role: .cancel) { viewModel.setDeleteIndex(nil) }
             Button(strings.dialogConfirm, role: .destructive) {
                 if let idx = viewModel.deleteIndex {
-                    viewModel.removeAt(index: idx)
+                    if viewModel.selectedTab == .mine {
+                        viewModel.removeMineAt(visibleIndex: idx)
+                    } else {
+                        viewModel.removeReceivedAt(visibleIndex: idx)
+                    }
                 }
             }
         } message: {
@@ -48,14 +57,37 @@ struct DocumentsScreen: View {
         } message: {
             Text(strings.dialogClearMessage)
         }
+        .alert(strings.dialogErrorTitle, isPresented: Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button(strings.dialogOk, role: .cancel) { viewModel.errorMessage = nil }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
+        .alert(strings.dialogImportResultTitle, isPresented: Binding(
+            get: { viewModel.importSummaryMessage != nil },
+            set: { if !$0 { viewModel.importSummaryMessage = nil } }
+        )) {
+            Button(strings.dialogOk, role: .cancel) { viewModel.importSummaryMessage = nil }
+        } message: {
+            Text(viewModel.importSummaryMessage ?? "")
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.shareCode != nil },
+            set: { if !$0 { viewModel.dismissShareSheet() } }
+        )) {
+            shareSheet
+                .presentationDetents([.medium])
+        }
         .onAppear {
             viewModel.observeResults()
         }
     }
 
     private var documentsSubtitle: String {
-        if viewModel.results.isEmpty {
-            strings.noSavedAnalyses
+        if viewModel.currentItems.isEmpty {
+            viewModel.selectedTab == .mine ? strings.noSavedAnalyses : strings.noImported
         } else if viewModel.selectionMode {
             strings.selectedCount(viewModel.selectedIndices.count)
         } else {
@@ -65,7 +97,7 @@ struct DocumentsScreen: View {
 
     private var topBar: some View {
         AppTopBar(title: strings.screenDocuments, subtitle: documentsSubtitle) {
-            if !viewModel.results.isEmpty {
+            if viewModel.selectedTab == .mine && !viewModel.ownItems.isEmpty {
                 if viewModel.selectionMode {
                     Button(strings.selectionCancel) {
                         viewModel.exitSelectionMode()
@@ -97,11 +129,7 @@ struct DocumentsScreen: View {
 
     private var documentsFab: some View {
         Button {
-            if !viewModel.selectionMode {
-                viewModel.enterSelectionMode()
-            } else if !viewModel.selectedIndices.isEmpty {
-                // TODO: здесь позже будет реальная отправка (сервер / другой транспорт).
-            }
+            viewModel.onFabTapped()
         } label: {
             Label(fabTitle, systemImage: "square.and.arrow.up")
                 .labelStyle(.titleAndIcon)
@@ -114,7 +142,20 @@ struct DocumentsScreen: View {
         .controlSize(.regular)
     }
 
-    private var emptyState: some View {
+    private var tabBar: some View {
+        Picker("", selection: Binding(
+            get: { viewModel.selectedTab },
+            set: { viewModel.selectTab($0) }
+        )) {
+            Text(strings.tabMine).tag(DocumentsTab.mine)
+            Text(strings.tabReceived).tag(DocumentsTab.received)
+        }
+        .pickerStyle(.segmented)
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+    }
+
+    private func emptyState(text: String) -> some View {
         VStack(spacing: 24) {
             RoundedRectangle(cornerRadius: 28)
                 .fill(Color(.secondarySystemBackground))
@@ -127,7 +168,7 @@ struct DocumentsScreen: View {
             Text(strings.emptyTitle)
                 .font(.title2)
                 .fontWeight(.semibold)
-            Text(strings.emptySubtitle)
+            Text(text)
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -139,20 +180,90 @@ struct DocumentsScreen: View {
     private var resultsList: some View {
         ScrollView {
             LazyVStack(spacing: 12) {
-                ForEach(Array(viewModel.results.enumerated()), id: \.offset) { index, data in
+                ForEach(Array(viewModel.currentItems.enumerated()), id: \.offset) { index, data in
                     DocumentsResultCard(
                         data: data,
-                        selectionMode: viewModel.selectionMode,
+                        selectionMode: viewModel.selectionMode && viewModel.selectedTab == .mine,
                         selected: viewModel.selectedIndices.contains(index),
-                        onToggleSelect: { viewModel.toggleSelection(at: index) },
+                        onToggleSelect: {
+                            if viewModel.selectedTab == .mine {
+                                viewModel.toggleSelection(at: index)
+                            }
+                        },
                         onDelete: { viewModel.setDeleteIndex(index) }
                     )
                 }
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)
-            .padding(.bottom, listBottomInsetFab)
+            .padding(.bottom, viewModel.selectedTab == .mine ? listBottomInsetFab : 16)
         }
+    }
+
+    private var receivedTabContent: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                TextField("Вставьте одноразовый код", text: $viewModel.inputCode)
+                    .textInputAutocapitalization(.characters)
+                    .autocorrectionDisabled()
+                    .submitLabel(.done)
+                    .onSubmit { viewModel.sendCode() }
+
+                Button {
+                    viewModel.sendCode()
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                        .foregroundStyle(
+                            viewModel.inputCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                ? .secondary
+                                : Color.accentColor
+                        )
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.inputCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || viewModel.networkBusy)
+            }
+            .padding(.horizontal, 12)
+            .frame(height: 48)
+            .background(Color(.secondarySystemBackground))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color(.separator), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+
+            if viewModel.currentItems.isEmpty {
+                emptyState(text: strings.noImported)
+            } else {
+                resultsList
+            }
+        }
+    }
+
+    private var shareSheet: some View {
+        VStack(spacing: 12) {
+            Text(strings.shareCodeTitle)
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            Text(viewModel.shareCode ?? "")
+                .font(.largeTitle.monospacedDigit())
+                .fontWeight(.bold)
+
+            if let expiresAt = viewModel.shareExpiresAt {
+                Text(strings.shareValidUntil(expiresAt))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Button(strings.copyCode) {
+                UIPasteboard.general.string = viewModel.shareCode
+                viewModel.dismissShareSheet()
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(20)
     }
 }
 
