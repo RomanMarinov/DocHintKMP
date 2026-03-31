@@ -58,6 +58,7 @@
     <string name="dialog_clear_title">Очистить все документы?</string>
     <string name="dialog_clear_message">Все сохранённые анализы будут удалены.</string>
     <string name="dialog_confirm">Удалить</string>
+    <string name="dialog_ok">Ок</string>
     <string name="dialog_cancel">Отмена</string>
 
     <string name="documents_action_send">Отправить</string>
@@ -68,6 +69,24 @@
     <string name="documents_share_preview_note">Дальше здесь будет экспорт (PDF / несколько файлов)</string>
     <string name="content_desc_share">Поделиться результатами</string>
     <string name="documents_fab_pick_first">Выберите в списке</string>
+    <string name="documents_tab_mine">Документы</string>
+    <string name="documents_tab_received">Принятые</string>
+    <string name="documents_no_imported">Нет импортированных анализов</string>
+    <string name="documents_import_code_label">Одноразовый код</string>
+    <string name="documents_import_button">Импортировать по коду</string>
+    <string name="documents_import_loading">Загрузка…</string>
+    <string name="documents_imported_count">Импортировано %1$d анализов</string>
+    <string name="documents_import_failed">Не удалось импортировать</string>
+    <string name="documents_import_summary_added">Добавлено документов: %1$d</string>
+    <string name="documents_import_summary_added_and_skipped">Добавлено документов: %1$d\nОтклонено дубликатов: %2$d</string>
+    <string name="documents_import_summary_no_new">Добавлено документов: 0\nНовых документов не найдено</string>
+    <string name="documents_share_failed">Не удалось отправить</string>
+    <string name="documents_select_at_least_one">Сначала выберите хотя бы один документ</string>
+    <string name="documents_share_code_title">Код для передачи</string>
+    <string name="documents_share_valid_until">Действителен до: %1$s</string>
+    <string name="documents_copy_code">Скопировать код</string>
+    <string name="dialog_error_title">Ошибка</string>
+    <string name="dialog_import_result_title">Результат импорта</string>
     <string name="screen_settings">Настройки</string>
     <string name="settings_subtitle">API ключ и мониторинг</string>
     <string name="section_api_key">API ключ</string>

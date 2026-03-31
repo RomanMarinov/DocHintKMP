@@ -3,6 +3,7 @@ package app.romanmarinov.androidapp
 import android.app.Application
 import app.romanmarinov.dochintkmp.di.dataModule
 import app.romanmarinov.dochintkmp.di.domainModule
+import app.romanmarinov.dochintkmp.di.networkModule
 import app.romanmarinov.dochintkmp.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -15,7 +16,7 @@ class DocHintApp : Application() {
         startKoin {
             androidLogger(Level.ERROR)
             androidContext(this@DocHintApp)
-            modules(dataModule, domainModule, viewModelModule)
+            modules(dataModule, domainModule, viewModelModule, networkModule)
         }
     }
 }

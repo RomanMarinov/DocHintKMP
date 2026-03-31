@@ -97,7 +97,8 @@ class ResultsRepositoryImpl(
             institution = institution,
             doctorName = doctorName,
             analysisDate = analysisDate,
-            indicators = indicatorsList.ifEmpty { null }
+            indicators = indicatorsList.ifEmpty { null },
+            source = source
         )
     }
 

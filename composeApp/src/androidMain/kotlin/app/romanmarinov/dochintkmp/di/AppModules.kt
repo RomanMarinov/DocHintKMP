@@ -13,7 +13,12 @@ import app.romanmarinov.dochintkmp.data.ocr.TesseractOcrEngine
 import app.romanmarinov.dochintkmp.data.ocr.paddle.PaddleOcrEngine
 import app.romanmarinov.dochintkmp.data.parser.RuleParser
 import app.romanmarinov.dochintkmp.data.remote.OpenRouterClient
+import app.romanmarinov.dochintkmp.data.remote.DocumentsShareGateway
+import app.romanmarinov.dochintkmp.data.remote.ShareNetworkConfig
+import app.romanmarinov.dochintkmp.data.remote.createAppJson
 import app.romanmarinov.dochintkmp.data.remote.createOpenRouterHttpClient
+import app.romanmarinov.dochintkmp.data.remote.share.ShareRemoteDataSource
+import app.romanmarinov.dochintkmp.data.remote.share.ShareRemoteDataSourceImpl
 import app.romanmarinov.dochintkmp.data.repository.MedicalRepositoryImpl
 import app.romanmarinov.dochintkmp.data.repository.ResultsRepositoryImpl
 import app.romanmarinov.dochintkmp.domain.repository.MedicalRepository
@@ -38,6 +43,12 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
+val networkModule = module {
+    single { createOpenRouterHttpClient() }
+    single { OpenRouterClient(get()) }
+    single { createAppJson() }
+}
+
 val dataModule = module {
 
     single { DatabaseDriverFactory(androidContext()) }
@@ -60,7 +71,14 @@ val dataModule = module {
 
     single { RuleParser() }
 
-    single { OpenRouterClient(createOpenRouterHttpClient()) }
+    single<ShareRemoteDataSource> {
+        ShareRemoteDataSourceImpl(
+            httpClient = get(),
+            json = get(),
+            baseUrl = ShareNetworkConfig.baseUrl
+        )
+    }
+    single { DocumentsShareGateway(get()) }
 
     single<MedicalRepository> {
         MedicalRepositoryImpl(get(), get())
@@ -114,7 +132,7 @@ val viewModelModule = module {
             get<AddResultUseCase>(),
         )
     }
-    viewModel { ResultsViewModel(get(), get(), get()) }
+    viewModel { ResultsViewModel(get(), get(), get(), get(), get()) }
     viewModel { SettingsViewModel(get(), get()) }
     viewModel {
         OcrOfflineScannerViewModel(

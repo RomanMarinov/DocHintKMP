@@ -100,7 +100,7 @@ struct DocumentsScreen: View {
             if !viewModel.selectionMode {
                 viewModel.enterSelectionMode()
             } else if !viewModel.selectedIndices.isEmpty {
-                // Экспорт / share sheet — позже, как на Android.
+                // TODO: здесь позже будет реальная отправка (сервер / другой транспорт).
             }
         } label: {
             Label(fabTitle, systemImage: "square.and.arrow.up")

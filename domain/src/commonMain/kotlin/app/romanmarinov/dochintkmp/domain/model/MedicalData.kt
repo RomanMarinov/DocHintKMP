@@ -8,7 +8,8 @@ data class MedicalData(
     val institution: String? = null,
     val doctorName: String? = null,
     val analysisDate: String? = null,
-    val indicators: List<AnalysisIndicator>? = null
+    val indicators: List<AnalysisIndicator>? = null,
+    val source: String? = null
 )
 
 @Serializable

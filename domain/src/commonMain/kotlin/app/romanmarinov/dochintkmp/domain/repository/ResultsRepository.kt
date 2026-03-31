@@ -14,6 +14,7 @@ interface ResultsRepository {
     companion object {
         const val SOURCE_AI = "ai"
         const val SOURCE_OFFLINE = "offline"
+        const val SOURCE_SHARED = "shared"
         const val SOURCE_UNKNOWN = "unknown"
     }
 }

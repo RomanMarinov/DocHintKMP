@@ -18,10 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
-/**
- * Общая верхняя панель: одинаковая минимальная высота на всех экранах.
- * Заголовок и подзаголовок слева, [actions] справа.
- */
 object AppTopBarDefaults {
     val MinHeight = 92.dp
     val HorizontalPadding = 24.dp

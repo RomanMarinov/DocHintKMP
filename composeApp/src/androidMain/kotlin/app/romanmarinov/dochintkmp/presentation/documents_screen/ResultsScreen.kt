@@ -1,149 +1,154 @@
 package app.romanmarinov.dochintkmp.presentation.documents_screen
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import android.content.ClipData
+import android.content.Context
+import android.view.MotionEvent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FolderOpen
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SecondaryTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
-import app.romanmarinov.dochintkmp.presentation.documents_screen.model.ResultsEvent
+import app.romanmarinov.dochintkmp.data.util.isoUtcToMoscowDateTimeOrSelf
+import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
+import app.romanmarinov.dochintkmp.presentation.documents_screen.components.DocumentsShareFab
+import app.romanmarinov.dochintkmp.presentation.documents_screen.model.DocumentsTab
+import app.romanmarinov.dochintkmp.presentation.documents_screen.model.ImportByCodeSummary
+import app.romanmarinov.dochintkmp.presentation.documents_screen.model.ResultsEffect
+import app.romanmarinov.dochintkmp.presentation.documents_screen.model.ResultsIntent
+import app.romanmarinov.dochintkmp.presentation.documents_screen.tabs.DocumentsTabContent
+import app.romanmarinov.dochintkmp.presentation.documents_screen.tabs.ReceivedTabContent
+import app.romanmarinov.dochintkmp.presentation.documents_screen.util.toImportSummaryMessage
 import app.romanmarinov.dochintkmp.presentation.text.russianAnalysisCountLabel
+import app.romanmarinov.dochintkmp.presentation.ui.AppAlertDialog
 import app.romanmarinov.dochintkmp.presentation.ui.AppTopBar
 import org.koin.androidx.compose.koinViewModel
 
-/** Запас снизу списка: FAB + отступы (над системной навигацией уже учтён [Scaffold] в [AppNavigation]). */
 private val DocumentsListBottomInsetFab = 88.dp
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun ResultsScreen(viewModel: ResultsViewModel = koinViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val ownIndexed = uiState.results.withIndex().filter { it.value.source != ResultsRepository.SOURCE_SHARED }
+    val ownItems = ownIndexed.map { it.value }
+    val receivedIndexed = uiState.results.withIndex().filter { it.value.source == ResultsRepository.SOURCE_SHARED }
+    val receivedItems = receivedIndexed.map { it.value }
+    val ownSelectedVisibleIndices = ownIndexed.mapIndexedNotNull { visibleIndex, indexed ->
+        if (indexed.index in uiState.selectedIndices) visibleIndex else null
+    }.toSet()
 
-    var deleteIndex by remember { mutableIntStateOf(-1) }
-    var showClearDialog by remember { mutableStateOf(false) }
-    var selectionMode by rememberSaveable { mutableStateOf(false) }
-    var selectedIndices by remember { mutableStateOf(setOf<Int>()) }
-
-    fun exitSelectionMode() {
-        selectionMode = false
-        selectedIndices = emptySet()
+    var actionErrorEffect by remember { mutableStateOf<ResultsEffect.Error?>(null) }
+    var importSummaryData by remember { mutableStateOf<ImportByCodeSummary?>(null) }
+    val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val actionErrorMessage = actionErrorEffect?.let { effect ->
+        effect.message ?: stringResource(effect.messageRes)
     }
+    val importSummaryMessage = importSummaryData?.toImportSummaryMessage()
 
-    fun toggleIndex(index: Int) {
-        selectedIndices = if (index in selectedIndices) selectedIndices - index else selectedIndices + index
-    }
+    CollectResultsEffects(
+        viewModel = viewModel,
+        onError = { actionErrorEffect = it },
+        onImportSummary = { importSummaryData = it }
+    )
 
-    if (deleteIndex >= 0) {
-        AlertDialog(
-            onDismissRequest = { deleteIndex = -1 },
-            title = { Text(stringResource(R.string.dialog_delete_title)) },
-            text = { Text(stringResource(R.string.dialog_delete_message)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.onEvent(ResultsEvent.RemoveAt(deleteIndex))
-                    deleteIndex = -1
-                    exitSelectionMode()
-                }) {
-                    Text(stringResource(R.string.dialog_confirm), color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { deleteIndex = -1 }) {
-                    Text(stringResource(R.string.dialog_cancel))
-                }
-            }
-        )
-    }
+    AppAlertDialog(
+        visible = uiState.deleteIndex != null,
+        title = stringResource(R.string.dialog_delete_title),
+        message = stringResource(R.string.dialog_delete_message),
+        onDismissRequest = { viewModel.onIntent(ResultsIntent.DismissDeleteDialog) },
+        onConfirm = { viewModel.onIntent(ResultsIntent.ConfirmDelete) },
+        confirmText = stringResource(R.string.dialog_confirm),
+        dismissText = stringResource(R.string.dialog_cancel),
+        confirmTextColor = MaterialTheme.colorScheme.error
+    )
 
-    if (showClearDialog) {
-        AlertDialog(
-            onDismissRequest = { showClearDialog = false },
-            title = { Text(stringResource(R.string.dialog_clear_title)) },
-            text = { Text(stringResource(R.string.dialog_clear_message)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.onEvent(ResultsEvent.ClearResults)
-                    showClearDialog = false
-                    exitSelectionMode()
-                }) {
-                    Text(stringResource(R.string.dialog_confirm), color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showClearDialog = false }) {
-                    Text(stringResource(R.string.dialog_cancel))
-                }
-            }
-        )
-    }
+    AppAlertDialog(
+        visible = uiState.showClearDialog,
+        title = stringResource(R.string.dialog_clear_title),
+        message = stringResource(R.string.dialog_clear_message),
+        onDismissRequest = { viewModel.onIntent(ResultsIntent.DismissClearDialog) },
+        onConfirm = { viewModel.onIntent(ResultsIntent.ConfirmClear) },
+        confirmText = stringResource(R.string.dialog_confirm),
+        dismissText = stringResource(R.string.dialog_cancel),
+        confirmTextColor = MaterialTheme.colorScheme.error
+    )
+
+    AppAlertDialog(
+        visible = actionErrorMessage != null,
+        title = stringResource(R.string.dialog_error_title),
+        message = actionErrorMessage.orEmpty(),
+        onDismissRequest = { actionErrorEffect = null },
+        onConfirm = { actionErrorEffect = null },
+        confirmText = stringResource(R.string.dialog_ok),
+        dismissText = null
+    )
+
+    AppAlertDialog(
+        visible = importSummaryMessage != null,
+        title = stringResource(R.string.dialog_import_result_title),
+        message = importSummaryMessage.orEmpty(),
+        onDismissRequest = { importSummaryData = null },
+        onConfirm = { importSummaryData = null },
+        confirmText = stringResource(R.string.dialog_ok),
+        dismissText = null
+    )
 
     val subtitle = when {
-        uiState.results.isEmpty() -> stringResource(R.string.no_saved_analyses)
-        selectionMode -> stringResource(R.string.documents_selected_count, selectedIndices.size)
-        else -> russianAnalysisCountLabel(uiState.results.size)
+        uiState.selectedTab == DocumentsTab.MINE && ownItems.isEmpty() -> stringResource(R.string.no_saved_analyses)
+        uiState.selectedTab == DocumentsTab.RECEIVED && receivedItems.isEmpty() -> stringResource(R.string.documents_no_imported)
+        uiState.selectionMode -> stringResource(R.string.documents_selected_count, uiState.selectedIndices.size)
+        else -> russianAnalysisCountLabel(if (uiState.selectedTab == DocumentsTab.MINE) ownItems.size else receivedItems.size)
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInteropFilter { event ->
+                if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
+                    focusManager.clearFocus()
+                }
+                false
+            }
+    ) {
         Column(modifier = Modifier.fillMaxSize()) {
             AppTopBar(
                 title = stringResource(R.string.screen_documents),
                 subtitle = subtitle,
                 actions = {
-                    if (uiState.results.isNotEmpty()) {
-                        if (selectionMode) {
-                            TextButton(onClick = { exitSelectionMode() }) {
+                    if (uiState.selectedTab == DocumentsTab.MINE && ownItems.isNotEmpty()) {
+                        if (uiState.selectionMode) {
+                            TextButton(onClick = { viewModel.onIntent(ResultsIntent.SetSelectionMode(false)) }) {
                                 Text(stringResource(R.string.documents_selection_cancel))
                             }
                         } else {
-                            FilledTonalButton(onClick = { showClearDialog = true }) {
+                            FilledTonalButton(onClick = { viewModel.onIntent(ResultsIntent.ShowClearDialog) }) {
                                 Text(stringResource(R.string.all_clear_data))
                             }
                         }
@@ -151,234 +156,92 @@ fun ResultsScreen(viewModel: ResultsViewModel = koinViewModel()) {
                 }
             )
 
-            if (uiState.results.isEmpty()) {
-                EmptyState(modifier = Modifier.weight(1f))
-            } else {
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 16.dp,
-                        bottom = DocumentsListBottomInsetFab
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    itemsIndexed(uiState.results, key = { i, _ -> i }) { index, data ->
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = slideInVertically { it / 2 } + fadeIn()
-                        ) {
-                            ResultCard(
-                                data = data,
-                                index = index,
-                                selectionMode = selectionMode,
-                                selected = index in selectedIndices,
-                                onToggleSelect = { toggleIndex(index) },
-                                onDelete = { deleteIndex = index }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        if (uiState.results.isNotEmpty()) {
-            val pickPhase = selectionMode && selectedIndices.isEmpty()
-            ExtendedFloatingActionButton(
-                onClick = {
-                    when {
-                        !selectionMode -> {
-                            selectionMode = true
-                            selectedIndices = emptySet()
-                        }
-                        selectedIndices.isNotEmpty() -> { /* экспорт позже */ }
-                        else -> { /* выбор в списке — см. подзаголовок «Выбрано» */ }
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 16.dp),
-                icon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Share,
-                        contentDescription = stringResource(R.string.content_desc_share)
-                    )
-                },
-                text = {
-                    Text(
-                        when {
-                            !selectionMode -> stringResource(R.string.documents_action_send)
-                            pickPhase -> stringResource(R.string.documents_fab_pick_first)
-                            else -> stringResource(R.string.documents_share) + " (${selectedIndices.size})"
-                        }
-                    )
-                },
-                expanded = true
-            )
-        }
-    }
-}
-
-@Composable
-private fun EmptyState(modifier: Modifier) {
-    Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(32.dp)
-        ) {
-            Surface(
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(96.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Outlined.FolderOpen, null,
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                stringResource(R.string.empty_title),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                stringResource(R.string.empty_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Composable
-private fun ResultCard(
-    data: MedicalData,
-    index: Int,
-    selectionMode: Boolean,
-    selected: Boolean,
-    onToggleSelect: () -> Unit,
-    onDelete: () -> Unit
-) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                    if (selectionMode) {
-                        Checkbox(
-                            checked = selected,
-                            onCheckedChange = { onToggleSelect() },
-                            modifier = Modifier.padding(end = 8.dp),
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = MaterialTheme.colorScheme.primary,
-                                uncheckedColor = MaterialTheme.colorScheme.outline
-                            )
-                        )
-                    }
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .then(
-                                if (selectionMode) Modifier.clickable(onClick = onToggleSelect)
-                                else Modifier
-                            )
-                    ) {
-                        Text(
-                            stringResource(R.string.label_document_type),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            data.documentType ?: stringResource(R.string.analysis_default),
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        data.analysisDate?.let {
-                            Text(
-                                it,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-                if (!selectionMode) {
-                    IconButton(onClick = onDelete) {
-                        Icon(painter = painterResource(R.drawable.ic_delete), stringResource(R.string.content_desc_delete), Modifier.size(20.dp))
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(modifier = Modifier.height(12.dp))
-
-            data.institution?.let { MetaRow(title = stringResource(R.string.label_institution), institution = it) }
-            data.doctorName?.let { MetaRow(title = stringResource(R.string.label_doctor), institution = it) }
-
-            data.indicators?.takeIf { it.isNotEmpty() }?.let { indicators ->
-                Spacer(modifier = Modifier.height(12.dp))
-                AssistChip(
-                    onClick = {},
-                    label = {
-                        Text(
-                            stringResource(R.string.indicators_short_format, indicators.size),
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        labelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    ),
-                    border = null
+            SecondaryTabRow(selectedTabIndex = uiState.selectedTab.ordinal) {
+                Tab(
+                    selected = uiState.selectedTab == DocumentsTab.MINE,
+                    onClick = { viewModel.onIntent(ResultsIntent.SelectTab(DocumentsTab.MINE)) },
+                    text = { Text(stringResource(R.string.documents_tab_mine)) }
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        indicators.forEach { ind ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 2.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    ind.name,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    ind.value,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                ind.referenceRange?.let {
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        it,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.outline
-                                    )
-                                }
-                            }
+                Tab(
+                    selected = uiState.selectedTab == DocumentsTab.RECEIVED,
+                    onClick = { viewModel.onIntent(ResultsIntent.SelectTab(DocumentsTab.RECEIVED)) },
+                    text = { Text(stringResource(R.string.documents_tab_received)) }
+                )
+            }
+
+            if (uiState.selectedTab == DocumentsTab.MINE) {
+                DocumentsTabContent(
+                    modifier = Modifier.fillMaxSize(),
+                    items = ownItems,
+                    selectionMode = uiState.selectionMode,
+                    selectedIndices = ownSelectedVisibleIndices,
+                    bottomInset = DocumentsListBottomInsetFab,
+                    onToggleSelect = { index ->
+                        ownIndexed.getOrNull(index)?.index?.let {
+                            viewModel.onIntent(ResultsIntent.ToggleSelect(it))
+                        }
+                    },
+                    onDelete = { index ->
+                        ownIndexed.getOrNull(index)?.index?.let {
+                            viewModel.onIntent(ResultsIntent.DeleteRequest(it))
                         }
                     }
+                )
+            } else {
+                ReceivedTabContent(
+                    modifier = Modifier.fillMaxSize(),
+                    inputCode = uiState.inputCode,
+                    networkBusy = uiState.networkBusy,
+                    items = receivedItems,
+                    onInputCodeChange = {
+                        viewModel.onIntent(ResultsIntent.InputCodeChanged(it.trim().uppercase()))
+                    },
+                    onClick = { viewModel.onIntent(ResultsIntent.SendCode) },
+                    onDelete = { index ->
+                        receivedIndexed.getOrNull(index)?.index?.let {
+                            viewModel.onIntent(ResultsIntent.DeleteRequest(it))
+                        }
+                    }
+                )
+            }
+        }
+
+        if (uiState.selectedTab == DocumentsTab.MINE && ownItems.isNotEmpty()) {
+            DocumentsShareFab(
+                selectionMode = uiState.selectionMode,
+                selectedCount = uiState.selectedIndices.size,
+                onClick = { viewModel.onIntent(ResultsIntent.FabClicked) }
+            )
+        }
+
+        uiState.shareSheet?.let { shareSheet ->
+            ModalBottomSheet(onDismissRequest = { viewModel.onIntent(ResultsIntent.DismissShareSheet) }) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp)
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(stringResource(R.string.documents_share_code_title), style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(shareSheet.code, style = MaterialTheme.typography.displaySmall)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        stringResource(
+                            R.string.documents_share_valid_until,
+                            shareSheet.expiresAt.isoUtcToMoscowDateTimeOrSelf()
+                        ),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedButton(onClick = {
+                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        clipboard.setPrimaryClip(ClipData.newPlainText("share_code", shareSheet.code))
+                    }) {
+                        Text(stringResource(R.string.documents_copy_code))
+                    }
+                    Spacer(modifier = Modifier.weight(1f, fill = true))
                 }
             }
         }
@@ -386,13 +249,17 @@ private fun ResultCard(
 }
 
 @Composable
-private fun MetaRow(title: String, institution: String) {
-    Row(
-        modifier = Modifier.padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(title, style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(institution, style = MaterialTheme.typography.bodyMedium)
+private fun CollectResultsEffects(
+    viewModel: ResultsViewModel,
+    onError: (ResultsEffect.Error) -> Unit,
+    onImportSummary: (ImportByCodeSummary) -> Unit
+) {
+    LaunchedEffect(viewModel) {
+        viewModel.effects.collect { effect ->
+            when (effect) {
+                is ResultsEffect.Error -> onError(effect)
+                is ResultsEffect.ImportSummary -> onImportSummary(effect.summary)
+            }
+        }
     }
 }
