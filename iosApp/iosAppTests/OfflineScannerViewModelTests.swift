@@ -77,7 +77,8 @@ final class OfflineScannerViewModelTests: XCTestCase {
             institution: "Lab",
             doctorName: nil,
             analysisDate: nil,
-            indicators: []
+            indicators: [],
+            source: nil
         )
         let extract = FakeOfflineTextExtractor(returnText: "raw")
         let scan = FakeOfflineScanning(

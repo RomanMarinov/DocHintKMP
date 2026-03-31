@@ -156,7 +156,8 @@ final class AIScannerViewModel: ObservableObject {
             institution: d.institution,
             doctorName: d.doctorName,
             analysisDate: d.analysisDate,
-            indicators: indicators
+            indicators: indicators,
+            source: nil
         )
     }
 
