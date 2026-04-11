@@ -26,6 +26,7 @@ class UseCasesTest {
         assertEquals(1, repo.addCalls.size)
         assertEquals(data, repo.addCalls.single().first)
         assertEquals(ResultsRepository.SOURCE_AI, repo.addCalls.single().second)
+        assertEquals("clean text", repo.addCalls.single().third)
         assertEquals(listOf("clean text"), repo.markedTexts)
     }
 
@@ -111,7 +112,7 @@ class UseCasesTest {
         private val isDuplicate: Boolean = false
     ) : ResultsRepository {
         override val results: StateFlow<List<MedicalData>> = MutableStateFlow(emptyList())
-        val addCalls = mutableListOf<Pair<MedicalData, String>>()
+        val addCalls = mutableListOf<Triple<MedicalData, String, String?>>()
         val markedTexts = mutableListOf<String>()
         var lastDuplicateQuery: String? = null
         var clearCalled: Boolean = false
@@ -126,8 +127,9 @@ class UseCasesTest {
             markedTexts.add(cleanText)
         }
 
-        override fun addResult(data: MedicalData, source: String) {
-            addCalls.add(data to source)
+        override fun addResult(data: MedicalData, source: String, processedText: String?) {
+            addCalls.add(Triple(data, source, processedText))
+            processedText?.let { markTextAsProcessed(it) }
         }
 
         override fun removeAt(index: Int) {

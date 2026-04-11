@@ -50,8 +50,9 @@ class ResultsRepositoryImpl(
         }
     }
 
-    override fun addResult(data: MedicalData, source: String) {
+    override fun addResult(data: MedicalData, source: String, processedText: String?) {
         val indicatorsJson = Json.encodeToString(data.indicators ?: emptyList())
+        val fingerprint = processedText?.let { normalizeForHash(it) }
         medicalResultQueries.insertResult(
             documentType = data.documentType,
             institution = data.institution,
@@ -59,17 +60,28 @@ class ResultsRepositoryImpl(
             analysisDate = data.analysisDate,
             indicators = indicatorsJson,
             source = source,
-            createdAt = currentTimeMillis()
+            createdAt = currentTimeMillis(),
+            textFingerprint = fingerprint
         )
+        processedText?.let { markTextAsProcessed(it) }
         _results.value = loadAll()
     }
 
     override fun removeAt(index: Int) {
         val ids = medicalResultQueries.selectIdsOrdered().executeAsList()
-        if (index in ids.indices) {
-            medicalResultQueries.deleteById(ids[index])
-            _results.update { loadAll() }
+        if (index !in ids.indices) return
+        val id = ids[index]
+        val row = medicalResultQueries.selectById(id).executeAsList().firstOrNull()
+        row?.textFingerprint?.let { fp ->
+            runBlocking {
+                processedHashMutex.withLock {
+                    val hashes = processedHashStorage.load()
+                    processedHashStorage.save(hashes - fp)
+                }
+            }
         }
+        medicalResultQueries.deleteById(id)
+        _results.update { loadAll() }
     }
 
     override fun clearResults() {

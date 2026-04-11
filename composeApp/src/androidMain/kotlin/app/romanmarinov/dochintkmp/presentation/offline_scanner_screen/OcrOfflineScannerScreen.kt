@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,19 +29,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FileOpen
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PictureAsPdf
+import androidx.compose.material.icons.outlined.UploadFile
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -56,6 +62,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -105,38 +112,77 @@ fun OcrOfflineScannerScreen(viewModel: OcrOfflineScannerViewModel = koinViewMode
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
+    val gradientBottom = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+
+    Column(modifier = Modifier.fillMaxSize()) {
         AppTopBar(title = stringResource(R.string.screen_offline))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        DocumentAttachedCard(
-            uiState = uiState,
-            onAttachFile = {
-                pickFileLauncher.launch(
-                    arrayOf(
-                        "image/*", "image/jpeg", "image/png",
-                        "application/pdf",
-                        "text/plain",
-                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.surface,
+                            gradientBottom
+                        )
                     )
                 )
-            },
-            onExtractMetrics = { viewModel.onEvent(OcrOfflineScannerEvent.ProcessFile) },
-            onSaveDocument = { viewModel.onEvent(OcrOfflineScannerEvent.SaveDocument) },
-            onResetState = { viewModel.onEvent(OcrOfflineScannerEvent.ResetState) }
-        )
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
+        ) {
+            Spacer(modifier = Modifier.height(12.dp))
 
-        if (uiState.selectedUri == null) {
+            DocumentAttachedCard(
+                uiState = uiState,
+                onAttachFile = {
+                    pickFileLauncher.launch(
+                        arrayOf(
+                            "image/*", "image/jpeg", "image/png",
+                            "application/pdf",
+                            "text/plain",
+                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        )
+                    )
+                },
+                onExtractMetrics = { viewModel.onEvent(OcrOfflineScannerEvent.ProcessFile) },
+                onSaveDocument = { viewModel.onEvent(OcrOfflineScannerEvent.SaveDocument) },
+                onResetState = { viewModel.onEvent(OcrOfflineScannerEvent.ResetState) }
+            )
+
+            if (uiState.selectedUri == null) {
+                OfflineInstructionsPanel(
+                    modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun OfflineInstructionsPanel(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+        shadowElevation = 1.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = stringResource(R.string.offline_instructions),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -151,121 +197,173 @@ private fun DocumentAttachedCard(
     onResetState: () -> Unit
 ) {
     val context = LocalContext.current
+    val formats = stringResource(R.string.supported_formats)
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         if (uiState.selectedUri == null) {
-            OutlinedCard(
-                onClick = onAttachFile,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp)
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(22.dp))
+                    .clickable { onAttachFile() },
+                shape = RoundedCornerShape(22.dp),
+                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                tonalElevation = 2.dp
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(160.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.tertiaryContainer,
-                            modifier = Modifier.size(56.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    Icons.Outlined.FileOpen,
-                                    contentDescription = null,
-                                    Modifier.size(28.dp),
-                                    tint = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
-                            }
+                    Surface(
+                        shape = RoundedCornerShape(18.dp),
+                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f),
+                        modifier = Modifier.size(72.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                Icons.Outlined.UploadFile,
+                                contentDescription = null,
+                                modifier = Modifier.size(34.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            stringResource(R.string.select_file),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface
+                            text = stringResource(R.string.select_file),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            stringResource(R.string.supported_formats),
+                            text = stringResource(R.string.supported_formats),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f)
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                formats.forEach { tag ->
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    ) {
+                        Text(
+                            text = tag,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                         )
                     }
                 }
             }
         } else {
             ElevatedCard(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 3.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Box {
-                    when {
-                        uiState.fileType == FileType.IMAGE || uiState.fileType == FileType.PNG -> {
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(uiState.selectedUri)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = stringResource(R.string.content_desc_document_preview),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(16.dp)),
-                                contentScale = ContentScale.Crop
-                            )
+                Column {
+                    Box {
+                        when (uiState.fileType) {
+                            FileType.IMAGE, FileType.PNG -> {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(uiState.selectedUri)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = stringResource(R.string.content_desc_document_preview),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(216.dp)
+                                        .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            FileType.PDF if uiState.pdfPreviewBitmap != null -> {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(uiState.pdfPreviewBitmap)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = stringResource(R.string.content_desc_document_preview),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(216.dp)
+                                        .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            else -> FileTypePreview(uiState.fileType)
                         }
-                        uiState.fileType == FileType.PDF && uiState.pdfPreviewBitmap != null -> {
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(uiState.pdfPreviewBitmap)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = stringResource(R.string.content_desc_document_preview),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(16.dp)),
-                                contentScale = ContentScale.Crop
-                            )
+                        IconButton(
+                            onClick = onResetState,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(10.dp)
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = stringResource(R.string.content_desc_remove),
+                                    modifier = Modifier.padding(8.dp),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
-                        else -> FileTypePreview(uiState.fileType)
-                    }
-                    FilledTonalIconButton(
-                        onClick = onResetState,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .size(32.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = stringResource(R.string.content_desc_remove),
-                            Modifier.size(18.dp)
-                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             AnimatedVisibility(
                 visible = uiState.contentState !is OcrOfflineContentState.Success,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                Button(
+                FilledTonalButton(
                     onClick = onExtractMetrics,
                     enabled = uiState.contentState !is OcrOfflineContentState.Loading,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(16.dp)
+                        .height(54.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 ) {
+                    Icon(
+                        Icons.Outlined.FileOpen,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
                     if (uiState.contentState is OcrOfflineContentState.Loading) {
                         Text(stringResource(R.string.processing), style = MaterialTheme.typography.labelLarge)
                     } else {
@@ -281,167 +379,166 @@ private fun DocumentAttachedCard(
             ) {
                 Column {
                     (uiState.contentState as? OcrOfflineContentState.Success)?.let { success ->
-                        OfflineSuccessCard(data = success.data)
+                        OfflineSuccessPanel(data = success.data)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
+                    Button(
+                        onClick = onSaveDocument,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(16.dp)
                     ) {
-                        Button(
-                            onClick = onSaveDocument,
-                            modifier = Modifier.height(44.dp),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(stringResource(R.string.adding_document_save), style = MaterialTheme.typography.labelLarge)
-                        }
+                        Text(stringResource(R.string.adding_document_save), style = MaterialTheme.typography.labelLarge)
                     }
                 }
             }
 
             AnimatedVisibility(
                 visible = uiState.contentState is OcrOfflineContentState.Loading ||
-                        uiState.contentState is OcrOfflineContentState.Error,
+                    uiState.contentState is OcrOfflineContentState.Error,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
                 when (val s = uiState.contentState) {
-                    is OcrOfflineContentState.Loading -> OfflineLoadingCard()
-                    is OcrOfflineContentState.Error -> OfflineErrorCard(errorType = s.type)
+                    is OcrOfflineContentState.Loading -> OfflineLoadingPanel()
+                    is OcrOfflineContentState.Error -> OfflineErrorPanel(errorType = s.type)
                     else -> {}
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
 @Composable
-private fun OfflineSuccessCard(data: MedicalData) {
-    var expanded by remember { mutableStateOf(false) }
+private fun OfflineSuccessPanel(data: MedicalData) {
+    var indicatorsExpanded by remember { mutableStateOf(true) }
     val arrowRotation by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = tween(300),
+        targetValue = if (indicatorsExpanded) 180f else 0f,
+        animationSpec = tween(280),
         label = "arrow"
     )
 
     ElevatedCard(
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) { expanded = !expanded }
+        shape = RoundedCornerShape(22.dp),
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.tertiaryContainer,
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = stringResource(R.string.view_result),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .rotate(arrowRotation)
-                )
-            }
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = stringResource(R.string.data_extracted_offline),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(14.dp))
 
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
-                Column {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
-                        modifier = Modifier.fillMaxWidth()
+            data.documentType?.takeIf { it.isNotBlank() }?.let { type ->
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        Icon(
+                            Icons.Outlined.Description,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
                             Text(
                                 stringResource(R.string.label_document_type),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                data.documentType ?: "—",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface
+                                type,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
                     }
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+            }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(16.dp))
+            AccentInfoRow(
+                label = stringResource(R.string.label_institution),
+                value = data.institution
+            )
+            AccentInfoRow(
+                label = stringResource(R.string.label_doctor),
+                value = data.doctorName
+            )
+            AccentInfoRow(
+                label = stringResource(R.string.label_analysis_date),
+                value = data.analysisDate
+            )
 
-                    DataField(stringResource(R.string.label_institution), data.institution)
-                    DataField(stringResource(R.string.label_doctor), data.doctorName)
-                    DataField(stringResource(R.string.label_analysis_date), data.analysisDate)
-
-                    data.indicators?.takeIf { it.isNotEmpty() }?.let { indicators ->
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
+            data.indicators?.takeIf { it.isNotEmpty() }?.let { indicators ->
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { indicatorsExpanded = !indicatorsExpanded },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        stringResource(R.string.indicators_count, indicators.size),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .rotate(arrowRotation)
+                    )
+                }
+                AnimatedVisibility(
+                    visible = indicatorsExpanded,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column(modifier = Modifier.padding(top = 10.dp)) {
+                        indicators.forEach { ind ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text(
-                                    stringResource(R.string.indicators_count, indicators.size),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ind.name,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                indicators.forEach { ind ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 3.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            ind.name,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
-                                            ind.value,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                    }
-                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    ind.value,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
                             }
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
                         }
                     }
                 }
@@ -451,75 +548,127 @@ private fun OfflineSuccessCard(data: MedicalData) {
 }
 
 @Composable
-private fun OfflineLoadingCard() {
-    ElevatedCard(shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+private fun AccentInfoRow(label: String, value: String?) {
+    if (value.isNullOrBlank()) return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Box(
+            modifier = Modifier
+                .width(4.dp)
+                .height(40.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(MaterialTheme.colorScheme.tertiary)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@Composable
+private fun OfflineLoadingPanel() {
+    ElevatedCard(
+        shape = RoundedCornerShape(22.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+    ) {
         Column(modifier = Modifier.padding(20.dp)) {
             LinearProgressIndicator(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(10.dp)),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            PipelineStep(stringResource(R.string.pipeline_ocr), true)
-            PipelineStep(stringResource(R.string.pipeline_text_cleanup), true)
-            PipelineStep(stringResource(R.string.pipeline_extract_rules), false)
+            Spacer(modifier = Modifier.height(18.dp))
+            NumberedPipelineStep(1, stringResource(R.string.pipeline_ocr), done = true)
+            NumberedPipelineStep(2, stringResource(R.string.pipeline_text_cleanup), done = true)
+            NumberedPipelineStep(3, stringResource(R.string.pipeline_extract_rules), done = false)
         }
     }
 }
 
 @Composable
-private fun OfflineErrorCard(errorType: OcrOfflineErrorType) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.errorContainer,
-        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+private fun NumberedPipelineStep(order: Int, label: String, done: Boolean) {
+    Row(
+        modifier = Modifier.padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.Default.ErrorOutline,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+        Surface(
+            shape = CircleShape,
+            color = if (done) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+            else MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.size(28.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = order.toString(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (done) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (done) MaterialTheme.colorScheme.onSurface
+            else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun OfflineErrorPanel(errorType: OcrOfflineErrorType) {
+    OutlinedCard(
+        shape = RoundedCornerShape(22.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f),
+                modifier = Modifier.size(44.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Default.ErrorOutline,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(14.dp))
             Text(
                 text = stringResource(errorType.stringResId),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onErrorContainer
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
-    }
-}
-
-@Composable
-private fun PipelineStep(label: String, done: Boolean) {
-    Row(modifier = Modifier.padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(if (done) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.outlineVariant)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            label,
-            style = MaterialTheme.typography.bodySmall,
-            color = if (done) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun DataField(label: String, value: String?) {
-    if (value.isNullOrBlank()) return
-    Row(modifier = Modifier.padding(vertical = 4.dp)) {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(110.dp)
-        )
-        Text(value, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -540,12 +689,12 @@ private fun FileTypePreview(fileType: FileType) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(160.dp),
+            .height(200.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(icon, contentDescription = null, Modifier.size(48.dp), tint = iconTint)
-            Spacer(modifier = Modifier.height(8.dp))
+            Icon(icon, contentDescription = null, Modifier.size(52.dp), tint = iconTint)
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 label,
                 style = MaterialTheme.typography.titleSmall,

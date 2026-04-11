@@ -11,24 +11,25 @@ CREATE TABLE MedicalResult (
     analysisDate TEXT,
     indicators TEXT NOT NULL,
     source TEXT NOT NULL DEFAULT 'unknown',
-    createdAt INTEGER NOT NULL
+    createdAt INTEGER NOT NULL,
+    textFingerprint INTEGER
 );
 
 CREATE INDEX MedicalResult_createdAt ON MedicalResult(createdAt DESC);
 
 selectAll:
-SELECT id, documentType, institution, doctorName, analysisDate, indicators, source, createdAt
+SELECT id, documentType, institution, doctorName, analysisDate, indicators, source, createdAt, textFingerprint
 FROM MedicalResult
 ORDER BY createdAt DESC;
 
 selectById:
-SELECT id, documentType, institution, doctorName, analysisDate, indicators, source, createdAt
+SELECT id, documentType, institution, doctorName, analysisDate, indicators, source, createdAt, textFingerprint
 FROM MedicalResult
 WHERE id = ?;
 
 insertResult:
-INSERT INTO MedicalResult(documentType, institution, doctorName, analysisDate, indicators, source, createdAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO MedicalResult(documentType, institution, doctorName, analysisDate, indicators, source, createdAt, textFingerprint)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteById:
 DELETE FROM MedicalResult

@@ -24,26 +24,26 @@ interface AiScannerPort {
 }
 
 class AiScannerPortImpl(
-    private val extractTextFromImage: ExtractTextFromImageUseCase,
-    private val extractTextOffline: ExtractTextOfflineUseCase,
-    private val parseWithLlm: ParseWithLlmUseCase,
-    private val checkDuplicate: CheckDuplicateUseCase,
-    private val addResult: AddResultUseCase,
+    private val extractTextFromImageUseCase: ExtractTextFromImageUseCase,
+    private val extractTextOfflineUseCase: ExtractTextOfflineUseCase,
+    private val parseWithLlmUseCase: ParseWithLlmUseCase,
+    private val checkDuplicateUseCase: CheckDuplicateUseCase,
+    private val addResultUseCase: AddResultUseCase,
 ) : AiScannerPort {
 
     override suspend fun extractTextOffline(uri: Uri, fileType: FileType): String =
-        extractTextOffline(uri, fileType)
+        extractTextOfflineUseCase(uri, fileType)
 
     override suspend fun extractTextFromImage(fileRef: String): String =
-        extractTextFromImage(fileRef)
+        extractTextFromImageUseCase(fileRef)
 
     override suspend fun parseWithLlm(apiKey: String, cleanText: String): ParseResult =
-        parseWithLlm(apiKey, cleanText)
+        parseWithLlmUseCase(apiKey, cleanText)
 
-    override fun isDuplicate(cleanText: String): Boolean = checkDuplicate(cleanText)
+    override fun isDuplicate(cleanText: String): Boolean = checkDuplicateUseCase(cleanText)
 
     override fun addResult(data: MedicalData, processedText: String) {
-        addResult(data, processedText, ResultsRepository.SOURCE_AI)
+        addResultUseCase(data, processedText, ResultsRepository.SOURCE_AI)
     }
 }
 
