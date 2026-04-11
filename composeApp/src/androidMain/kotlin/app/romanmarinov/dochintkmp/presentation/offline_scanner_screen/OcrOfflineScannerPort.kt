@@ -22,21 +22,21 @@ interface OcrOfflineScannerPort {
 }
 
 class OcrOfflineScannerPortImpl(
-    private val extractTextOffline: ExtractTextOfflineUseCase,
+    private val extractTextOfflineUseCase: ExtractTextOfflineUseCase,
     private val checkDuplicate: CheckDuplicateUseCase,
     private val ruleParser: RuleParser,
-    private val addResult: AddResultUseCase,
+    private val addResultUseCase: AddResultUseCase,
 ) : OcrOfflineScannerPort {
 
     override suspend fun extractTextOffline(uri: Uri, fileType: FileType): String =
-        extractTextOffline(uri, fileType)
+        extractTextOfflineUseCase(uri, fileType)
 
     override fun isDuplicate(cleanText: String): Boolean = checkDuplicate(cleanText)
 
     override fun parse(cleanText: String): MedicalData = ruleParser.parse(cleanText)
 
     override fun addResult(data: MedicalData, processedText: String) {
-        addResult(data, processedText, ResultsRepository.SOURCE_OFFLINE)
+        addResultUseCase(data, processedText, ResultsRepository.SOURCE_OFFLINE)
     }
 }
 

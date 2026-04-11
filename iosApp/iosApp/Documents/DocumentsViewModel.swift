@@ -178,7 +178,7 @@ final class DocumentsViewModel: ObservableObject {
         let lowercased = raw.lowercased()
         if lowercased.contains("timeout") &&
             (lowercased.contains("localhost") || lowercased.contains("127.0.0.1")) {
-            return "\(fallback)\nЕсли это симулятор, проверь что backend поднят на Mac:8080. Если реальный iPhone — задай DOCHINT_SHARE_BASE_URL (например, http://192.168.1.100:8080)."
+            return "\(fallback)\nЕсли это симулятор, проверь что backend поднят на Mac:8081. Если реальный iPhone — задай DOCHINT_SHARE_BASE_URL (например, http://192.168.1.100:8080)."
         }
         return raw
     }
