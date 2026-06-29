@@ -2,7 +2,7 @@ package app.romanmarinov.androidapp
 
 import android.net.Uri
 import app.romanmarinov.dochintkmp.domain.model.FileType
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.OcrOfflineScannerPort
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.OcrOfflineScannerViewModel
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineContentState
@@ -75,7 +75,11 @@ class OcrOfflineScannerViewModelTest {
     @Test
     fun processFile_whenSuccess_savesOnlyAfterSaveDocument() = runTest {
         val cleanText = "clean-text"
-        val data = MedicalData(documentType = "ОАК", institution = "Invitro")
+        val data = HousingPaymentDocument(
+            documentType = "Квитанция ЖКУ",
+            institution = "ООО УК ФЛАГМАН",
+            personalAccountNumber = "0667000001"
+        )
 
         val port = FakePort(cleanText = cleanText, duplicate = false, parseData = data)
         val pdf = FakePdfRenderer()
@@ -130,11 +134,11 @@ class OcrOfflineScannerViewModelTest {
     private class FakePort(
         private val cleanText: String,
         private val duplicate: Boolean = false,
-        private val parseData: MedicalData = MedicalData(),
+        private val parseData: HousingPaymentDocument = HousingPaymentDocument(),
         private val extractThrows: Throwable? = null,
     ) : OcrOfflineScannerPort {
         var addCallsCount: Int = 0
-        var lastAddedData: MedicalData? = null
+        var lastAddedData: HousingPaymentDocument? = null
         var lastAddedProcessedText: String? = null
 
         override suspend fun extractTextOffline(uri: Uri, fileType: FileType): String {
@@ -144,13 +148,12 @@ class OcrOfflineScannerViewModelTest {
 
         override fun isDuplicate(cleanText: String): Boolean = duplicate
 
-        override fun parse(cleanText: String): MedicalData = parseData
+        override fun parse(cleanText: String): HousingPaymentDocument = parseData
 
-        override fun addResult(data: MedicalData, processedText: String) {
+        override fun addResult(data: HousingPaymentDocument, processedText: String) {
             addCallsCount += 1
             lastAddedData = data
             lastAddedProcessedText = processedText
         }
     }
 }
-

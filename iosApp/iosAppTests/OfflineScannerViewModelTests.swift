@@ -72,13 +72,27 @@ final class OfflineScannerViewModelTests: XCTestCase {
 
     func testProcessFile_success_thenSaveDocument_callsSaveAndResets() async {
         let strings = OfflineScannerStrings()
-        let data = DomainMedicalData(
-            documentType: "ОАК",
-            institution: "Lab",
-            doctorName: nil,
-            analysisDate: nil,
-            indicators: [],
-            source: nil
+        let data = DomainHousingPaymentDocument(
+            documentType: "Квитанция ЖКУ",
+            institution: "ООО УК ФЛАГМАН",
+            documentDate: "2026-02",
+            source: nil,
+            category: .main,
+            documentNumber: nil,
+            paymentDocumentId: nil,
+            personalAccountNumber: "0667000001",
+            unifiedPersonalAccount: nil,
+            housingUtilitiesId: nil,
+            propertyAddress: nil,
+            payerName: nil,
+            totalAreaSqm: nil,
+            livingAreaSqm: nil,
+            residentsCount: nil,
+            amountDueForPeriod: "3625.82",
+            amountPaid: nil,
+            lastPaymentDate: nil,
+            debtFromPreviousPeriods: nil,
+            serviceLines: []
         )
         let extract = FakeOfflineTextExtractor(returnText: "raw")
         let scan = FakeOfflineScanning(
@@ -129,7 +143,7 @@ private final class FakeOfflineTextExtractor: OfflineScannerTextExtracting {
 private final class FakeOfflineScanning: OfflineScanningBackend {
     var result: OfflineScanProcessResult
     var saveCallCount = 0
-    var lastSavedData: DomainMedicalData?
+    var lastSavedData: DomainHousingPaymentDocument?
     var lastSavedText: String?
 
     init(result: OfflineScanProcessResult = OfflineScanProcessResult(data: nil, processedText: nil, error: .unknown)) {
@@ -140,7 +154,7 @@ private final class FakeOfflineScanning: OfflineScanningBackend {
         result
     }
 
-    func saveDocument(data: DomainMedicalData, processedText: String) {
+    func saveDocument(data: DomainHousingPaymentDocument, processedText: String) {
         saveCallCount += 1
         lastSavedData = data
         lastSavedText = processedText

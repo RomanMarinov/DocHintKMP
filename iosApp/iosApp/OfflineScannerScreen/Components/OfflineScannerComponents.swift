@@ -103,8 +103,8 @@ struct OfflineErrorCard: View {
 // MARK: - Expandable Result Card (matches Android OfflineSuccessCard)
 
 struct ExpandableResultCard: View {
-    let data: DomainMedicalData
-    @State private var expanded = false
+    let data: DomainHousingPaymentDocument
+    @State private var expanded = true
     private let strings = OfflineScannerStrings()
 
     var body: some View {
@@ -145,60 +145,69 @@ struct ExpandableResultCard: View {
 }
 
 private struct OfflineExpandedContent: View {
-    let data: DomainMedicalData
+    let data: DomainHousingPaymentDocument
     private let strings = OfflineScannerStrings()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if let docType = data.documentType {
-                HStack {
-                    Text(strings.labelDocumentType)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(Color(.secondaryLabel))
-                    Spacer()
-                    Text(docType)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(Color.primary)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(.tertiarySystemFill).opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            HStack {
+                Text(strings.labelDocumentType)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color(.secondaryLabel))
+                Spacer()
+                Text(data.documentType)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color.primary)
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(.tertiarySystemFill).opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
             Divider().background(Color(.separator))
+
             if let inst = data.institution {
-                OfflineMetaRow(title: strings.labelInstitution, value: inst)
+                OfflineMetaRow(title: strings.labelProvider, value: inst)
             }
-            if let doc = data.doctorName {
-                OfflineMetaRow(title: strings.labelDoctor, value: doc)
+            if let period = data.documentDate {
+                OfflineMetaRow(title: strings.labelBillingPeriod, value: period)
             }
-            if let date = data.analysisDate {
-                OfflineMetaRow(title: strings.labelAnalysisDate, value: date)
+            if let account = data.personalAccountNumber {
+                OfflineMetaRow(title: strings.labelPersonalAccount, value: account)
             }
-            if let indicators = data.indicators, !indicators.isEmpty {
+            if let address = data.propertyAddress {
+                OfflineMetaRow(title: strings.labelPropertyAddress, value: address)
+            }
+            if let amount = data.amountDueForPeriod {
+                OfflineMetaRow(title: strings.labelAmountDue, value: "\(amount) ₽")
+            }
+
+            if let services = data.serviceLines, !services.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(strings.indicatorsCount(indicators.count))
+                    Text(strings.servicesCount(services.count))
                         .font(.caption)
                         .foregroundStyle(Color(.secondaryLabel))
                     VStack(spacing: 4) {
-                        ForEach(indicators.indices, id: \.self) { i in
-                            let ind = indicators[i]
+                        ForEach(services.indices, id: \.self) { i in
+                            let line = services[i]
                             HStack(alignment: .top) {
-                                Text(ind.name)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color(.secondaryLabel))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                Text(ind.value)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(line.name)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color(.secondaryLabel))
+                                    if let tariff = line.tariff {
+                                        Text(strings.tariffValue(tariff))
+                                            .font(.caption2)
+                                            .foregroundStyle(Color(.tertiaryLabel))
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                Text("\(line.amountToPay) ₽")
                                     .font(.subheadline)
                                     .fontWeight(.medium)
-                                if let ref = ind.referenceRange {
-                                    Text(ref)
-                                        .font(.caption2)
-                                        .foregroundStyle(Color(.tertiaryLabel))
-                                }
                             }
                         }
                     }

@@ -53,6 +53,6 @@ enum OfflineFileType: String, CaseIterable {
 enum OfflineContentState: Equatable {
     case idle
     case loading
-    case success(DomainMedicalData, processedText: String)
+    case success(DomainHousingPaymentDocument, processedText: String)
     case error(String)
 }

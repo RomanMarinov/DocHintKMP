@@ -1084,7 +1084,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выберите файл PNG, JPG, PDF, TXT, DOCX"
+            "value" : "Прикрепите PDF или фото квитанции ЖКУ (платёжный документ)"
           }
         }
       }
@@ -1110,13 +1110,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "OCR recognition…"
+            "value" : "Text extraction…"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Распознавание OCR…"
+            "value" : "Извлечение текста"
           }
         }
       }
@@ -1222,13 +1222,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "View result"
+            "value" : "Data extracted"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Посмотреть результат"
+            "value" : "Данные извлечены"
           }
         }
       }

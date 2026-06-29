@@ -1,8 +1,9 @@
 package app.romanmarinov.dochintkmp.shared.ios
 
-import app.romanmarinov.dochintkmp.data.parser.RuleParser
+import app.romanmarinov.dochintkmp.data.mapper.toMedicalData
+import app.romanmarinov.dochintkmp.data.parser.HousingBillParser
 import app.romanmarinov.dochintkmp.data.text.TextCleaner
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
@@ -15,7 +16,7 @@ import org.koin.core.component.inject
  */
 class OfflineScannerController : KoinComponent {
 
-    private val ruleParser: RuleParser by inject()
+    private val housingBillParser: HousingBillParser by inject()
     private val checkDuplicateUseCase: CheckDuplicateUseCase by inject()
     private val addResultUseCase: AddResultUseCase by inject()
 
@@ -28,14 +29,14 @@ class OfflineScannerController : KoinComponent {
             return ProcessResult(errorType = ErrorType.EMPTY_TEXT)
         }
 
-        val cleanText = TextCleaner.clean(rawText)
+        val cleanText = TextCleaner.cleanHousing(rawText)
 
-        when (val preFilter = TextCleaner.preFilter(cleanText)) {
-            is TextCleaner.PreFilterResult.TooShort ->
+        when (val preFilter = TextCleaner.housingPreFilter(cleanText)) {
+            is TextCleaner.HousingPreFilterResult.TooShort ->
                 return ProcessResult(errorType = ErrorType.TOO_SHORT)
-            is TextCleaner.PreFilterResult.NoMedicalData ->
-                return ProcessResult(errorType = ErrorType.NO_MEDICAL_DATA)
-            is TextCleaner.PreFilterResult.Ok -> { /* continue */ }
+            is TextCleaner.HousingPreFilterResult.NoHousingBill ->
+                return ProcessResult(errorType = ErrorType.NO_HOUSING_BILL)
+            is TextCleaner.HousingPreFilterResult.Ok -> { /* continue */ }
         }
 
         if (checkDuplicateUseCase(cleanText)) {
@@ -43,22 +44,19 @@ class OfflineScannerController : KoinComponent {
         }
 
         return try {
-            val data = ruleParser.parse(cleanText)
+            val data = housingBillParser.parse(cleanText)
             ProcessResult(data = data, processedText = cleanText)
         } catch (e: Exception) {
             ProcessResult(errorType = ErrorType.PARSE_FAILED)
         }
     }
 
-    /**
-     * Save parsed medical data to documents list.
-     */
-    fun saveDocument(data: MedicalData, processedText: String) {
-        addResultUseCase(data, processedText, ResultsRepository.SOURCE_OFFLINE)
+    fun saveDocument(data: HousingPaymentDocument, processedText: String) {
+        addResultUseCase(data.toMedicalData(), processedText, ResultsRepository.SOURCE_OFFLINE)
     }
 
     data class ProcessResult(
-        val data: MedicalData? = null,
+        val data: HousingPaymentDocument? = null,
         val processedText: String? = null,
         val errorType: ErrorType? = null
     )
@@ -66,7 +64,7 @@ class OfflineScannerController : KoinComponent {
     enum class ErrorType {
         EMPTY_TEXT,
         TOO_SHORT,
-        NO_MEDICAL_DATA,
+        NO_HOUSING_BILL,
         DUPLICATE_DOCUMENT,
         PARSE_FAILED
     }

@@ -87,7 +87,7 @@ final class OfflineScannerViewModel: ObservableObject {
             switch err {
             case .emptyText: msg = strings.errorEmptyText
             case .tooShort: msg = strings.errorTooShort
-            case .noMedicalData: msg = strings.errorNoMedicalData
+            case .noHousingBill: msg = strings.errorNoHousingBill
             case .duplicateDocument: msg = strings.errorDuplicate
             case .parseFailed: msg = strings.errorParseFailed
             case .unknown: msg = strings.errorUnknown
@@ -98,7 +98,7 @@ final class OfflineScannerViewModel: ObservableObject {
         }
     }
 
-    func saveDocument(data: DomainMedicalData, processedText: String) {
+    func saveDocument(data: DomainHousingPaymentDocument, processedText: String) {
         scanning.saveDocument(data: data, processedText: processedText)
         toastMessage = strings.toastAddedToDocuments
         resetState()

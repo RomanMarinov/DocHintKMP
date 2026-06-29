@@ -4,6 +4,7 @@ import app.romanmarinov.dochintkmp.data.local.DatabaseDriverFactory
 import app.romanmarinov.dochintkmp.data.local.ProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.local.createProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.local.getProcessedHashesDataStorePath
+import app.romanmarinov.dochintkmp.data.parser.HousingBillParser
 import app.romanmarinov.dochintkmp.data.parser.RuleParser
 import app.romanmarinov.dochintkmp.data.remote.DocumentsShareGateway
 import app.romanmarinov.dochintkmp.data.remote.ShareNetworkConfig
@@ -39,6 +40,7 @@ actual val iosDocumentsModule: Module = module {
     factory { ObserveResultsUseCase(get()) }
     factory { RemoveResultUseCase(get()) }
     factory { ClearResultsUseCase(get()) }
+    single { HousingBillParser() }
     single { RuleParser() }
     factory { CheckDuplicateUseCase(get()) }
     factory { AddResultUseCase(get()) }

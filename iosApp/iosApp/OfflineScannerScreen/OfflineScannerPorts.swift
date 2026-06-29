@@ -5,14 +5,14 @@ import Shared
 enum OfflineScanProcessError: Equatable {
     case emptyText
     case tooShort
-    case noMedicalData
+    case noHousingBill
     case duplicateDocument
     case parseFailed
     case unknown
 }
 
 struct OfflineScanProcessResult {
-    var data: DomainMedicalData?
+    var data: DomainHousingPaymentDocument?
     var processedText: String?
     var error: OfflineScanProcessError?
 }
@@ -38,7 +38,7 @@ final class DefaultOfflineScannerTextExtractor: OfflineScannerTextExtracting {
 /// Parse, duplicate check, save — mirrors KMP [OfflineScannerController] for production; fakes for tests.
 protocol OfflineScanningBackend: AnyObject {
     func processText(rawText: String) -> OfflineScanProcessResult
-    func saveDocument(data: DomainMedicalData, processedText: String)
+    func saveDocument(data: DomainHousingPaymentDocument, processedText: String)
 }
 
 final class KotlinOfflineScanningBackend: OfflineScanningBackend {
@@ -59,7 +59,7 @@ final class KotlinOfflineScanningBackend: OfflineScanningBackend {
         return OfflineScanProcessResult(data: nil, processedText: nil, error: .unknown)
     }
 
-    func saveDocument(data: DomainMedicalData, processedText: String) {
+    func saveDocument(data: DomainHousingPaymentDocument, processedText: String) {
         controller.saveDocument(data: data, processedText: processedText)
     }
 
@@ -67,7 +67,7 @@ final class KotlinOfflineScanningBackend: OfflineScanningBackend {
         switch e {
         case .emptyText: return .emptyText
         case .tooShort: return .tooShort
-        case .noMedicalData: return .noMedicalData
+        case .noHousingBill: return .noHousingBill
         case .duplicateDocument: return .duplicateDocument
         case .parseFailed: return .parseFailed
         default: return .unknown

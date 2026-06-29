@@ -8,9 +8,11 @@ import app.romanmarinov.dochintkmp.data.local.SecureStorage
 import app.romanmarinov.dochintkmp.data.ocr.DocxTextExtractor
 import app.romanmarinov.dochintkmp.data.ocr.OcrEngine
 import app.romanmarinov.dochintkmp.data.ocr.PdfPageRenderer
+import app.romanmarinov.dochintkmp.data.ocr.PdfTextExtractor
 import app.romanmarinov.dochintkmp.data.ocr.PdfFirstPageRenderer
 import app.romanmarinov.dochintkmp.data.ocr.TesseractOcrEngine
 import app.romanmarinov.dochintkmp.data.ocr.paddle.PaddleOcrEngine
+import app.romanmarinov.dochintkmp.data.parser.HousingBillParser
 import app.romanmarinov.dochintkmp.data.parser.RuleParser
 import app.romanmarinov.dochintkmp.data.remote.OpenRouterClient
 import app.romanmarinov.dochintkmp.data.remote.DocumentsShareGateway
@@ -65,10 +67,12 @@ val dataModule = module {
     single { PaddleOcrEngine(androidContext()) }
 
     single { PdfPageRenderer(androidContext()) }
+    single { PdfTextExtractor(androidContext()) }
     single<PdfFirstPageRenderer> { get<PdfPageRenderer>() }
 
     single { DocxTextExtractor(androidContext()) }
 
+    single { HousingBillParser() }
     single { RuleParser() }
 
     single<ShareRemoteDataSource> {
@@ -90,6 +94,7 @@ val dataModule = module {
         ExtractTextOfflineUseCase(
             get<PaddleOcrEngine>(),
             get<PdfPageRenderer>(),
+            get<PdfTextExtractor>(),
             get<DocxTextExtractor>(),
             androidContext().contentResolver
         )
@@ -128,7 +133,7 @@ val viewModelModule = module {
         OcrOfflineScannerPortImpl(
             get<ExtractTextOfflineUseCase>(),
             get<CheckDuplicateUseCase>(),
-            get<RuleParser>(),
+            get<HousingBillParser>(),
             get<AddResultUseCase>(),
         )
     }

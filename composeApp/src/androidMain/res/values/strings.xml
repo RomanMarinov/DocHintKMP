@@ -19,6 +19,7 @@
     <string name="pipeline_ocr">OCR распознавание</string>
     <string name="pipeline_text_cleanup">Очистка текста</string>
     <string name="content_desc_document_preview">Превью документа</string>
+    <string name="error_no_viewer_for_document">Нет приложения для просмотра файла</string>
     <string name="content_desc_remove">Убрать</string>
 
     <string name="screen_ai_scanner">AI Сканер</string>
@@ -42,8 +43,28 @@
     <string name="error_duplicate_document_offline">Этот документ уже был загружен ранее.</string>
     <string name="recognize_offline">Извлечь данные</string>
     <string name="data_extracted_offline">Данные извлечены</string>
-    <string name="offline_instructions">Прикрепите PDF или фото анализа крови (ОАК, биохимия)</string>
+    <string name="offline_instructions">Прикрепите PDF или фото квитанции ЖКУ (платёжный документ)</string>
+    <string name="pipeline_text_extraction">Извлечение текста</string>
     <string name="pipeline_extract_rules">Извлечение по правилам</string>
+    <string name="error_offline_not_housing_bill">Документ не похож на квитанцию ЖКУ</string>
+    <string name="error_offline_too_short">Слишком мало текста в документе</string>
+    <string name="error_offline_no_service_lines">Не удалось извлечь услуги из квитанции</string>
+    <string name="error_offline_parse_failed">Не удалось разобрать квитанцию</string>
+    <string name="label_provider">Управляющая компания</string>
+    <string name="label_billing_period">Расчётный период</string>
+    <string name="label_personal_account">Лицевой счёт</string>
+    <string name="label_property_address">Адрес</string>
+    <string name="label_amount_due">К оплате</string>
+    <string name="label_amount_paid">Оплачено</string>
+    <string name="label_payment_date">Дата оплаты</string>
+    <string name="label_payer">Плательщик</string>
+    <string name="label_housing_utilities_id">ИЖКУ</string>
+    <string name="label_payment_document_id">ID документа</string>
+    <string name="label_total_area_short">Общая</string>
+    <string name="label_living_area_short">Жилая</string>
+    <string name="label_residents">Проживающих</string>
+    <string name="services_count">Услуги (%1$d)</string>
+    <string name="tariff_value_format">Тариф: %1$s</string>
 
     <string name="screen_documents">Документы</string>
     <string name="no_saved_analyses">Нет сохранённых анализов</string>

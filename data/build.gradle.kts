@@ -47,6 +47,7 @@ kotlin {
             implementation(libs.androidx.security.crypto)
             implementation(libs.tesseract4android)
             implementation(libs.onnxruntime.android)
+            implementation(libs.pdfbox.android)
             implementation(libs.sqldelight.android.driver)
         }
         iosMain.dependencies {

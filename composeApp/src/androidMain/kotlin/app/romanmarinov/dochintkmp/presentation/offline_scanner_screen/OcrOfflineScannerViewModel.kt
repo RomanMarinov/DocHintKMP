@@ -86,8 +86,24 @@ class OcrOfflineScannerViewModel(
                 _uiState.update { it.copy(contentState = OcrOfflineContentState.Success(data, cleanText)) }
             } catch (e: Exception) {
                 Log.e("OcrOfflineScanner", "processFile", e)
-                _uiState.update { it.copy(contentState = OcrOfflineContentState.Error(OcrOfflineErrorType.UNKNOWN)) }
+                _uiState.update {
+                    it.copy(contentState = OcrOfflineContentState.Error(mapOfflineError(e)))
+                }
             }
+        }
+    }
+
+    private fun mapOfflineError(error: Exception): OcrOfflineErrorType {
+        val message = error.message.orEmpty().lowercase()
+        return when {
+            message.contains("квитанц") || message.contains("жку") || message.contains("жкх") ->
+                OcrOfflineErrorType.NOT_HOUSING_BILL
+            message.contains("мало текста") -> OcrOfflineErrorType.TOO_SHORT
+            message.contains("услуг") || message.contains("показател") ->
+                OcrOfflineErrorType.NO_SERVICE_LINES
+            message.contains("извлечь") || message.contains("распознать") ->
+                OcrOfflineErrorType.PARSE_FAILED
+            else -> OcrOfflineErrorType.UNKNOWN
         }
     }
 

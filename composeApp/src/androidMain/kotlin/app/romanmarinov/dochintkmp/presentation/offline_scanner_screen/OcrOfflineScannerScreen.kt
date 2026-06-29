@@ -70,10 +70,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.presentation.ui.AppTopBar
 import app.romanmarinov.dochintkmp.domain.model.FileType
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
+import app.romanmarinov.dochintkmp.presentation.components.HousingBillDocumentContent
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineContentState
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineErrorType
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineScannerEvent
@@ -276,6 +281,13 @@ private fun DocumentAttachedCard(
                 }
             }
         } else {
+            val onOpenDocumentPreview: () -> Unit = {
+                uiState.selectedUri?.let { uri ->
+                    openDocumentInSystemViewer(context, uri, uiState.fileType)
+                }
+            }
+            val previewClickModifier = Modifier.clickable(onClick = onOpenDocumentPreview)
+
             ElevatedCard(
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.elevatedCardColors(
@@ -297,7 +309,8 @@ private fun DocumentAttachedCard(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(216.dp)
-                                        .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
+                                        .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                                        .then(previewClickModifier),
                                     contentScale = ContentScale.Crop
                                 )
                             }
@@ -311,11 +324,15 @@ private fun DocumentAttachedCard(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(216.dp)
-                                        .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
+                                        .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                                        .then(previewClickModifier),
                                     contentScale = ContentScale.Crop
                                 )
                             }
-                            else -> FileTypePreview(uiState.fileType)
+                            else -> FileTypePreview(
+                                fileType = uiState.fileType,
+                                onClick = onOpenDocumentPreview
+                            )
                         }
                         IconButton(
                             onClick = onResetState,
@@ -358,11 +375,6 @@ private fun DocumentAttachedCard(
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 ) {
-                    Icon(
-                        Icons.Outlined.FileOpen,
-                        contentDescription = null,
-                        modifier = Modifier.size(22.dp)
-                    )
                     Spacer(modifier = Modifier.width(10.dp))
                     if (uiState.contentState is OcrOfflineContentState.Loading) {
                         Text(stringResource(R.string.processing), style = MaterialTheme.typography.labelLarge)
@@ -413,10 +425,10 @@ private fun DocumentAttachedCard(
 }
 
 @Composable
-private fun OfflineSuccessPanel(data: MedicalData) {
-    var indicatorsExpanded by remember { mutableStateOf(true) }
+private fun OfflineSuccessPanel(data: HousingPaymentDocument) {
+    var detailsExpanded by remember { mutableStateOf(true) }
     val arrowRotation by animateFloatAsState(
-        targetValue = if (indicatorsExpanded) 180f else 0f,
+        targetValue = if (detailsExpanded) 180f else 0f,
         animationSpec = tween(280),
         label = "arrow"
     )
@@ -427,155 +439,44 @@ private fun OfflineSuccessPanel(data: MedicalData) {
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
-            Text(
-                text = stringResource(R.string.data_extracted_offline),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(14.dp))
-
-            data.documentType?.takeIf { it.isNotBlank() }?.let { type ->
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Outlined.Description,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                stringResource(R.string.label_document_type),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                            Text(
-                                type,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(14.dp))
-            }
-
-            AccentInfoRow(
-                label = stringResource(R.string.label_institution),
-                value = data.institution
-            )
-            AccentInfoRow(
-                label = stringResource(R.string.label_doctor),
-                value = data.doctorName
-            )
-            AccentInfoRow(
-                label = stringResource(R.string.label_analysis_date),
-                value = data.analysisDate
-            )
-
-            data.indicators?.takeIf { it.isNotEmpty() }?.let { indicators ->
-                Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { detailsExpanded = !detailsExpanded },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(R.string.data_extracted_offline),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { indicatorsExpanded = !indicatorsExpanded },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        stringResource(R.string.indicators_count, indicators.size),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1f)
+                        .size(24.dp)
+                        .rotate(arrowRotation)
+                )
+            }
+
+            AnimatedVisibility(
+                visible = detailsExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    HousingBillDocumentContent(
+                        data = data,
+                        showDocumentTypeChip = true
                     )
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(22.dp)
-                            .rotate(arrowRotation)
-                    )
-                }
-                AnimatedVisibility(
-                    visible = indicatorsExpanded,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    Column(modifier = Modifier.padding(top = 10.dp)) {
-                        indicators.forEach { ind ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 6.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    ind.name,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.weight(1f),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    ind.value,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                            )
-                        }
-                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun AccentInfoRow(label: String, value: String?) {
-    if (value.isNullOrBlank()) return
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box(
-            modifier = Modifier
-                .width(4.dp)
-                .height(40.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.tertiary)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
         }
     }
 }
@@ -597,7 +498,7 @@ private fun OfflineLoadingPanel() {
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
             Spacer(modifier = Modifier.height(18.dp))
-            NumberedPipelineStep(1, stringResource(R.string.pipeline_ocr), done = true)
+            NumberedPipelineStep(1, stringResource(R.string.pipeline_text_extraction), done = true)
             NumberedPipelineStep(2, stringResource(R.string.pipeline_text_cleanup), done = true)
             NumberedPipelineStep(3, stringResource(R.string.pipeline_extract_rules), done = false)
         }
@@ -672,8 +573,32 @@ private fun OfflineErrorPanel(errorType: OcrOfflineErrorType) {
     }
 }
 
+private fun openDocumentInSystemViewer(context: Context, uri: Uri, fileType: FileType) {
+    val mimeType = context.contentResolver.getType(uri)
+        ?: when (fileType) {
+            FileType.PDF -> "application/pdf"
+            FileType.PNG -> "image/png"
+            FileType.IMAGE -> "image/jpeg"
+            FileType.TXT -> "text/plain"
+            FileType.DOCX -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        }
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, mimeType)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    try {
+        context.startActivity(Intent.createChooser(intent, null))
+    } catch (_: ActivityNotFoundException) {
+        android.widget.Toast.makeText(
+            context,
+            context.getString(R.string.error_no_viewer_for_document),
+            android.widget.Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
 @Composable
-private fun FileTypePreview(fileType: FileType) {
+private fun FileTypePreview(fileType: FileType, onClick: (() -> Unit)? = null) {
     val (icon: ImageVector, label: String) = when (fileType) {
         FileType.PDF -> Icons.Outlined.PictureAsPdf to stringResource(R.string.file_type_pdf)
         FileType.TXT -> Icons.Outlined.Description to stringResource(R.string.file_type_txt)
@@ -689,7 +614,8 @@ private fun FileTypePreview(fileType: FileType) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp),
+            .height(200.dp)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

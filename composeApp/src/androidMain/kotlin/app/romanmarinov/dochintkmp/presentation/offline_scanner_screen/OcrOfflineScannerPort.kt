@@ -1,13 +1,14 @@
 package app.romanmarinov.dochintkmp.presentation.offline_scanner_screen
 
 import android.net.Uri
+import app.romanmarinov.dochintkmp.data.mapper.toMedicalData
+import app.romanmarinov.dochintkmp.data.parser.HousingBillParser
 import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.domain.model.FileType
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
-import app.romanmarinov.dochintkmp.data.parser.RuleParser
 
 /**
  * "Port" for offline scanner interactions.
@@ -17,14 +18,14 @@ import app.romanmarinov.dochintkmp.data.parser.RuleParser
 interface OcrOfflineScannerPort {
     suspend fun extractTextOffline(uri: Uri, fileType: FileType): String
     fun isDuplicate(cleanText: String): Boolean
-    fun parse(cleanText: String): MedicalData
-    fun addResult(data: MedicalData, processedText: String)
+    fun parse(cleanText: String): HousingPaymentDocument
+    fun addResult(data: HousingPaymentDocument, processedText: String)
 }
 
 class OcrOfflineScannerPortImpl(
     private val extractTextOfflineUseCase: ExtractTextOfflineUseCase,
     private val checkDuplicate: CheckDuplicateUseCase,
-    private val ruleParser: RuleParser,
+    private val housingBillParser: HousingBillParser,
     private val addResultUseCase: AddResultUseCase,
 ) : OcrOfflineScannerPort {
 
@@ -33,10 +34,9 @@ class OcrOfflineScannerPortImpl(
 
     override fun isDuplicate(cleanText: String): Boolean = checkDuplicate(cleanText)
 
-    override fun parse(cleanText: String): MedicalData = ruleParser.parse(cleanText)
+    override fun parse(cleanText: String): HousingPaymentDocument = housingBillParser.parse(cleanText)
 
-    override fun addResult(data: MedicalData, processedText: String) {
-        addResultUseCase(data, processedText, ResultsRepository.SOURCE_OFFLINE)
+    override fun addResult(data: HousingPaymentDocument, processedText: String) {
+        addResultUseCase(data.toMedicalData(), processedText, ResultsRepository.SOURCE_OFFLINE)
     }
 }
-
