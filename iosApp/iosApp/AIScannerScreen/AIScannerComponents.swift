@@ -113,11 +113,18 @@ private struct AIExpandedContent: View {
             if let inst = data.institution {
                 AIDataField(label: strings.labelInstitution, value: inst)
             }
+            
+            let isHousingBill = data.documentType?.contains("квитанция", ignoreCase = true) == true ||
+                                data.documentType?.contains("жку", ignoreCase: true) == true ||
+                                data.documentType?.contains("жкх", ignoreCase: true) == true
+            
             if let doc = data.doctorName {
-                AIDataField(label: strings.labelDoctor, value: doc)
+                let doctorLabel = isHousingBill ? strings.labelPayer : strings.labelDoctor
+                AIDataField(label: doctorLabel, value: doc)
             }
             if let date = data.analysisDate {
-                AIDataField(label: strings.labelAnalysisDate, value: date)
+                let dateLabel = isHousingBill ? strings.labelBillingPeriod : strings.labelAnalysisDate
+                AIDataField(label: dateLabel, value: date)
             }
 
             if !data.indicators.isEmpty {

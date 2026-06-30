@@ -1,5 +1,9 @@
 package app.romanmarinov.dochintkmp.presentation.ai_scanner_screen
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -231,6 +235,13 @@ fun OcrAiScannerScreen(
                         }
                     }
                 } else {
+                    val onOpenDocumentPreview: () -> Unit = {
+                        uiState.selectedUri?.let { uri ->
+                            openDocumentInSystemViewer(context, uri, uiState.selectedFileType)
+                        }
+                    }
+                    val previewClickModifier = Modifier.clickable(onClick = onOpenDocumentPreview)
+
                     ElevatedCard(
                         shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.elevatedCardColors(
@@ -252,7 +263,8 @@ fun OcrAiScannerScreen(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(216.dp)
-                                                .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
+                                                .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                                                .then(previewClickModifier),
                                             contentScale = ContentScale.Crop
                                         )
                                     }
@@ -266,11 +278,15 @@ fun OcrAiScannerScreen(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(216.dp)
-                                                .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)),
+                                                .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                                                .then(previewClickModifier),
                                             contentScale = ContentScale.Crop
                                         )
                                     }
-                                    else -> AiFileTypePreview(uiState.selectedFileType)
+                                    else -> AiFileTypePreview(
+                                        fileType = uiState.selectedFileType,
+                                        onClick = onOpenDocumentPreview
+                                    )
                                 }
                                 IconButton(
                                     onClick = { viewModel.onEvent(OcrAiScannerEvent.ResetState) },
@@ -503,8 +519,23 @@ private fun AiSuccessPanel(result: ParseResult) {
             }
 
             AiAccentInfoRow(stringResource(R.string.label_institution), data.institution)
-            AiAccentInfoRow(stringResource(R.string.label_doctor), data.doctorName)
-            AiAccentInfoRow(stringResource(R.string.label_analysis_date), data.analysisDate)
+            
+            val isHousingBill = data.documentType?.contains("квитанция", ignoreCase = true) == true ||
+                                data.documentType?.contains("жку", ignoreCase = true) == true ||
+                                data.documentType?.contains("жкх", ignoreCase = true) == true
+            
+            val doctorLabel = if (isHousingBill) 
+                stringResource(R.string.label_payer)
+            else 
+                stringResource(R.string.label_doctor)
+            
+            val dateLabel = if (isHousingBill)
+                stringResource(R.string.label_billing_period)
+            else
+                stringResource(R.string.label_analysis_date)
+            
+            AiAccentInfoRow(doctorLabel, data.doctorName)
+            AiAccentInfoRow(dateLabel, data.analysisDate)
 
             data.indicators?.takeIf { it.isNotEmpty() }?.let { indicators ->
                 Spacer(modifier = Modifier.height(12.dp))
@@ -673,7 +704,7 @@ private fun AiErrorPanel(errorType: OcrAiErrorType, detailMessage: String?) {
 }
 
 @Composable
-private fun AiFileTypePreview(fileType: FileType) {
+private fun AiFileTypePreview(fileType: FileType, onClick: (() -> Unit)? = null) {
     val (icon: ImageVector, label: String) = when (fileType) {
         FileType.PDF -> Icons.Outlined.PictureAsPdf to stringResource(R.string.file_type_pdf)
         FileType.TXT -> Icons.Outlined.Description to stringResource(R.string.file_type_txt)
@@ -688,7 +719,8 @@ private fun AiFileTypePreview(fileType: FileType) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp),
+            .height(200.dp)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -700,5 +732,29 @@ private fun AiFileTypePreview(fileType: FileType) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+private fun openDocumentInSystemViewer(context: Context, uri: Uri, fileType: FileType) {
+    val mimeType = context.contentResolver.getType(uri)
+        ?: when (fileType) {
+            FileType.PDF -> "application/pdf"
+            FileType.PNG -> "image/png"
+            FileType.IMAGE -> "image/jpeg"
+            FileType.TXT -> "text/plain"
+            FileType.DOCX -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        }
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, mimeType)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    try {
+        context.startActivity(Intent.createChooser(intent, null))
+    } catch (_: ActivityNotFoundException) {
+        android.widget.Toast.makeText(
+            context,
+            context.getString(R.string.error_no_viewer_for_document),
+            android.widget.Toast.LENGTH_SHORT
+        ).show()
     }
 }

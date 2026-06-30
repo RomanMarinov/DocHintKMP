@@ -134,20 +134,29 @@ class OpenRouterClient(
         if (type.isNullOrBlank()) {
             throw IllegalStateException("Не удалось распознать данные в документе")
         }
+        
         val isOak = type.contains("оак") || type.contains("oak") || type.contains("общий анализ") || type.contains("клинический")
         val isBak = type.contains("бак") || type.contains("bak") || type.contains("биохим")
-        if (!isOak && !isBak) {
-            throw IllegalStateException("Данный тип анализа не поддерживается")
+        val isHousing = type.contains("квитанция") || type.contains("жку") || type.contains("жкх") || 
+                       type.contains("коммунальн") || type.contains("платёж") || type.contains("платеж")
+        
+        if (!isOak && !isBak && !isHousing) {
+            throw IllegalStateException("Данный тип документа не поддерживается. Используйте анализы крови или квитанции ЖКХ")
         }
     }
 
     private fun inferDocumentType(indicators: List<AnalysisIndicator>): String? {
-        val oakNames = setOf("гемоглобин", "эритроциты", "лейкоциты", "тромбоциты", "соэ", "нейтрофилы", "mcv", "rdw")
+        val oakNames = setOf("гемоглобин", "эритроциты", "лейкоциты", "тромбоциты", "соэ", "нейтрофилы", "mcv", "rdw", "эозинофилы", "базофилы")
         val bakNames = setOf("глюкоза", "холестерин", "алт", "аст", "креатинин", "билирубин", "мочевина", "калий", "натрий")
+        val housingNames = setOf("содержание", "отопление", "водоснабжение", "электричество", "газоснабжение", "вывоз", "водоотведение", "услуга", "тариф")
+        
         val names = indicators.map { it.name.lowercase() }.toSet()
         val oakCount = names.count { n -> oakNames.any { n.contains(it) } }
         val bakCount = names.count { n -> bakNames.any { n.contains(it) } }
+        val housingCount = names.count { n -> housingNames.any { n.contains(it) } }
+        
         return when {
+            housingCount >= 2 -> "Квитанция ЖКХ"
             oakCount >= bakCount && oakCount > 0 -> "ОАК"
             bakCount > 0 -> "Биохимический анализ крови"
             else -> null
@@ -160,6 +169,10 @@ class OpenRouterClient(
             t == null || t.isBlank() -> data.documentType
             t == "oak" || t == "оак" || t.contains("общий анализ") || t.contains("клинический") -> "ОАК"
             t == "bak" || t == "бак" || t.contains("биохим") -> "Биохимический анализ крови"
+            t.contains("квитанция") || t.contains("жку") || t.contains("жкх") || 
+            t.contains("коммунальн") || t.contains("платёж") || t.contains("платеж") -> 
+                if (t.contains("капремонт") || t.contains("капитальный")) "Квитанция ЖКХ (капремонт)" 
+                else "Квитанция ЖКХ (основная)"
             else -> data.documentType
         }
         return data.copy(documentType = normalized)
@@ -167,7 +180,7 @@ class OpenRouterClient(
 
     companion object {
         const val BASE_URL = "https://openrouter.ai/"
-        const val MODEL_TEXT = "google/gemini-2.0-flash-001"
+        const val MODEL_TEXT = "gpt-4o-mini"
 
         private val json = Json {
             ignoreUnknownKeys = true
@@ -175,19 +188,54 @@ class OpenRouterClient(
         }
 
         private const val SYSTEM_PROMPT =
-            "Ты — парсер медицинских анализов крови. КРИТИЧНО: для ОАК в таблице есть строки «Эозинофилы, %», «Эозинофилы, абс.», «Базофилы, %», «Базофилы, абс.» — это 4 РАЗНЫХ показателя, извлеки все 4. Верни ТОЛЬКО JSON.\n" +
-            "Поддерживаемые типы: \"ОАК\" (общий анализ крови) и \"Биохимический анализ крови\".\n" +
-            "Определи тип по ключевым словам:\n" +
-            "- ОАК: \"общий анализ крови\", \"ОАК\", \"клинический анализ крови\"\n" +
-            "- Биохимия: \"биохимия\", \"биохимический\", \"БАК\"\n\n" +
-            "Формат ответа:\n" +
-            "{\"document_type\":\"ОАК\"|\"Биохимический анализ крови\"|null," +
-            "\"institution\":string|null,\"doctor_name\":string|null," +
-            "\"analysis_date\":string|null," +
-            "\"indicators\":[{\"name\":string,\"value\":string,\"reference_range\":string|null}]}\n\n" +
-            "Показатели для ОАК и Биохимии — извлекай каждый показатель из документа. " +
-            "ПЕРЕД ОТВЕТОМ проверь: в indicators есть и \"Эозинофилы, %\" и \"Эозинофилы, абс.\", и \"Базофилы, %\" и \"Базофилы, абс.\"? Если в таблице есть эти 4 строки — все 4 должны быть в JSON.\n" +
-            "- Без markdown, без объяснений, ТОЛЬКО JSON"
+            "Ты — универсальный парсер документов. Извлекаешь структурированные данные и НЕ СМЕШИВАЕШЬ поля между типами документов.\n\n" +
+            "ПОДДЕРЖИВАЕМЫЕ ТИПЫ ДОКУМЕНТОВ:\n" +
+            "1. ОАК (общий анализ крови)\n" +
+            "2. БАК (биохимический анализ крови)\n" +
+            "3. ЖКХ (квитанции за коммунальные услуги)\n\n" +
+            "ВАЖНО для ОАК: Эозинофилы и Базофилы имеют ДВА показателя каждые: \"..., %\" и \"..., абс.\" — это разные значения, извлеки ОБА!\n\n" +
+            "ОПРЕДЕЛИ ТИП ДОКУМЕНТА:\n" +
+            "- ОАК: содержит гемоглобин, эритроциты, лейкоциты, тромбоциты, СОЭ\n" +
+            "- БАК: содержит глюкозу, холестерин, билирубин, АЛТ, АСТ, креатинин\n" +
+            "- ЖКХ: содержит услуги (отопление, водоснабжение, электричество), УК, плательщика, квитанцию\n\n" +
+            "ФОРМАТ JSON-ответа (ОБЯЗАТЕЛЬНО ПРАВИЛЬНЫЕ ПОЛЯ ДЛЯ КАЖДОГО ТИПА):\n\n" +
+            "==== ПРИМЕР ДЛЯ ОАК ====\n" +
+            "{\n" +
+            "  \"document_type\": \"ОАК\",\n" +
+            "  \"institution\": \"ИНВИТРО лаборатория\",\n" +
+            "  \"doctor_name\": \"Иванов И.И.\",\n" +
+            "  \"analysis_date\": \"15.10.2024\",\n" +
+            "  \"indicators\": [\n" +
+            "    {\"name\": \"Гемоглобин\", \"value\": \"120 г/л\", \"reference_range\": \"120-160\"},\n" +
+            "    {\"name\": \"Эритроциты\", \"value\": \"4.2 млн/мкл\", \"reference_range\": \"4.0-5.0\"},\n" +
+            "    {\"name\": \"Эозинофилы, %\", \"value\": \"2%\", \"reference_range\": \"0-5%\"},\n" +
+            "    {\"name\": \"Эозинофилы, абс.\", \"value\": \"150 /мкл\", \"reference_range\": \"0-400\"}\n" +
+            "  ]\n" +
+            "}\n\n" +
+            "==== ПРИМЕР ДЛЯ ЖКХ ====\n" +
+            "{\n" +
+            "  \"document_type\": \"Квитанция ЖКХ (основная)\",\n" +
+            "  \"institution\": \"ООО УК 'Дом'\",\n" +
+            "  \"doctor_name\": \"Петров Сергей Викторович\",\n" +
+            "  \"analysis_date\": \"2024-10\",\n" +
+            "  \"indicators\": [\n" +
+            "    {\"name\": \"Содержание и ремонт\", \"value\": \"2500 ₽\", \"reference_range\": \"12 кв.м\"},\n" +
+            "    {\"name\": \"Отопление\", \"value\": \"3100 ₽\", \"reference_range\": \"0.5 Гкал\"},\n" +
+            "    {\"name\": \"Холодное водоснабжение\", \"value\": \"800 ₽\", \"reference_range\": \"5 куб.м\"},\n" +
+            "    {\"name\": \"Электроэнергия\", \"value\": \"1200 ₽\", \"reference_range\": \"120 кВт·ч\"}\n" +
+            "  ]\n" +
+            "}\n\n" +
+            "ПРАВИЛА ЗАПОЛНЕНИЯ:\n" +
+            "- document_type: точное название типа документа (ОАК, БАК, Квитанция ЖКХ (основная) или Квитанция ЖКХ (капремонт))\n" +
+            "- institution: для анализов=лаборатория, для ЖКХ=управляющая компания\n" +
+            "- doctor_name: для анализов=врач, для ЖКХ=ПЛАТЕЛЬЩИК (ФИО хозяина квартиры)\n" +
+            "- analysis_date: для анализов=дата анализа (ДД.ММ.ГГГГ), для ЖКХ=период платежа (ГГГГ-ММ)\n" +
+            "- indicators: показатели с name, value, reference_range\n\n" +
+            "ОБЯЗАТЕЛЬНО:\n" +
+            "1. Верни ТОЛЬКО JSON-объект, БЕЗ markdown кода (без ```), БЕЗ объяснений\n" +
+            "2. Не добавляй лишние поля в JSON\n" +
+            "3. indicators ОБЯЗАТЕЛЬНО должен быть непустой массив\n" +
+            "4. НЕ СМЕШИВАЙ поля между типами (не пиши врача для ЖКХ, не пиши услуги для анализов)"
     }
 }
 

@@ -3,7 +3,7 @@ import Foundation
 /// Swift implementation of OpenRouter API for AI Scanner (mirrors KMP OpenRouterClient).
 final class OpenRouterService {
     private let baseURL = "https://openrouter.ai/"
-    private let model = "google/gemini-2.0-flash-001"
+    private let model = "gpt-4o-mini"
 
     private let systemPrompt = """
     Ты — парсер медицинских анализов крови. КРИТИЧНО: для ОАК в таблице есть строки «Эозинофилы, %», «Эозинофилы, абс.», «Базофилы, %», «Базофилы, абс.» — это 4 РАЗНЫХ показателя, извлеки все 4. Верни ТОЛЬКО JSON.

@@ -1,5 +1,9 @@
 package app.romanmarinov.dochintkmp.presentation.offline_scanner_screen
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -30,12 +34,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.FileOpen
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material.icons.outlined.UploadFile
@@ -44,7 +46,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -70,12 +71,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import app.romanmarinov.dochintkmp.R
-import app.romanmarinov.dochintkmp.presentation.ui.AppTopBar
 import app.romanmarinov.dochintkmp.domain.model.FileType
 import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.presentation.components.HousingBillDocumentContent
@@ -83,6 +79,7 @@ import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.Ocr
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineErrorType
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineScannerEvent
 import app.romanmarinov.dochintkmp.presentation.offline_scanner_screen.model.OcrOfflineScannerState
+import app.romanmarinov.dochintkmp.presentation.ui.AppTopBar
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import org.koin.androidx.compose.koinViewModel
@@ -91,7 +88,7 @@ import org.koin.androidx.compose.koinViewModel
 fun OcrOfflineScannerScreen(viewModel: OcrOfflineScannerViewModel = koinViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val toastType = uiState.toastType
     if (toastType != null) {
         val message = stringResource(toastType.stringResId)

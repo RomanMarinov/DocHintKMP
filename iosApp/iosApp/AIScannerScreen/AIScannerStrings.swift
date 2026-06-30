@@ -26,4 +26,6 @@ struct AIScannerStrings {
     var labelInstitution: String { String(localized: "label_institution") }
     var labelDoctor: String { String(localized: "label_doctor") }
     var labelAnalysisDate: String { String(localized: "label_analysis_date") }
+    var labelPayer: String { String(localized: "label_payer") }
+    var labelBillingPeriod: String { String(localized: "label_billing_period") }
 }
