@@ -1,0 +1,35 @@
+CREATE TABLE HousingResult (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    documentType TEXT,
+    documentDate TEXT,
+    source TEXT NOT NULL DEFAULT 'unknown',
+    createdAt INTEGER NOT NULL,
+    textFingerprint INTEGER,
+    payload TEXT NOT NULL
+);
+
+CREATE INDEX HousingResult_createdAt ON HousingResult(createdAt DESC);
+
+selectAll:
+SELECT id, documentType, documentDate, source, createdAt, textFingerprint, payload
+FROM HousingResult
+ORDER BY createdAt DESC;
+
+selectById:
+SELECT id, documentType, documentDate, source, createdAt, textFingerprint, payload
+FROM HousingResult
+WHERE id = ?;
+
+insertResult:
+INSERT INTO HousingResult(documentType, documentDate, source, createdAt, textFingerprint, payload)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deleteById:
+DELETE FROM HousingResult
+WHERE id = ?;
+
+selectIdsOrdered:
+SELECT id FROM HousingResult ORDER BY createdAt DESC;
+
+deleteAll:
+DELETE FROM HousingResult;

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.data.remote.DocumentsShareGateway
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.ClearResultsUseCase
@@ -146,7 +146,7 @@ class ResultsViewModel(
         _uiState.update { it.copy(shareSheet = null) }
     }
 
-    fun addImportedResults(items: List<MedicalData>) {
+    fun addImportedResults(items: List<HousingPaymentDocument>) {
         items.forEach { addResult(it, processedText = null, source = ResultsRepository.SOURCE_SHARED) }
     }
 

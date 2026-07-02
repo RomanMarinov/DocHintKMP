@@ -1,13 +1,13 @@
 package app.romanmarinov.dochintkmp.domain.repository
 
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import kotlinx.coroutines.flow.StateFlow
 
 interface ResultsRepository {
-    val results: StateFlow<List<MedicalData>>
+    val results: StateFlow<List<HousingPaymentDocument>>
     fun isTextAlreadyProcessed(cleanText: String): Boolean
     fun markTextAsProcessed(cleanText: String)
-    fun addResult(data: MedicalData, source: String = SOURCE_UNKNOWN, processedText: String? = null)
+    fun addResult(data: HousingPaymentDocument, source: String = SOURCE_UNKNOWN, processedText: String? = null)
     fun removeAt(index: Int)
     fun clearResults()
 
@@ -18,4 +18,3 @@ interface ResultsRepository {
         const val SOURCE_UNKNOWN = "unknown"
     }
 }
-

@@ -4,7 +4,7 @@ import android.net.Uri
 import app.romanmarinov.dochintkmp.data.local.ApiKeyStorage
 import app.romanmarinov.dochintkmp.data.ocr.PdfFirstPageRenderer
 import app.romanmarinov.dochintkmp.domain.model.FileType
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
 import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.AiScannerPort
 import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.OcrAiScannerViewModel
@@ -95,8 +95,8 @@ class OcrAiScannerViewModelTest {
     @Test
     fun processImage_whenSuccess_savesOnlyAfterSaveDocument() = runTest {
         val cleanText = "clean-text"
-        val data = MedicalData(documentType = "ОАК", institution = "Invitro")
-        val parseResult = ParseResult(data = data, promptTokens = 1, completionTokens = 2, totalTokens = 3)
+        val data = HousingPaymentDocument(documentType = "Квитанция ЖКУ", institution = "ООО УК")
+        val parseResult = ParseResult(housingDocument = data, promptTokens = 1, completionTokens = 2, totalTokens = 3)
 
         val port = FakePort(cleanText = cleanText, duplicate = false, parseResult = parseResult)
         val apiKey = FakeApiKeyStorage(apiKey = "key")
@@ -158,11 +158,11 @@ class OcrAiScannerViewModelTest {
     private class FakePort(
         private val cleanText: String,
         private val duplicate: Boolean = false,
-        private val parseResult: ParseResult = ParseResult(data = MedicalData()),
+        private val parseResult: ParseResult = ParseResult(housingDocument = HousingPaymentDocument()),
         private val parseThrows: Throwable? = null
     ) : AiScannerPort {
         var addCallsCount: Int = 0
-        var lastAddedData: MedicalData? = null
+        var lastAddedData: HousingPaymentDocument? = null
         var lastAddedProcessedText: String? = null
 
         override suspend fun extractTextOffline(uri: Uri, fileType: FileType): String = cleanText
@@ -176,7 +176,7 @@ class OcrAiScannerViewModelTest {
 
         override fun isDuplicate(cleanText: String): Boolean = duplicate
 
-        override fun addResult(data: MedicalData, processedText: String) {
+        override fun addResult(data: HousingPaymentDocument, processedText: String) {
             addCallsCount += 1
             lastAddedData = data
             lastAddedProcessedText = processedText

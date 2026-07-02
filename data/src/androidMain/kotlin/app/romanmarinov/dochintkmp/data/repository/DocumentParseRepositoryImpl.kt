@@ -5,16 +5,16 @@ import app.romanmarinov.dochintkmp.data.ocr.OcrEngine
 import app.romanmarinov.dochintkmp.data.remote.OpenRouterClient
 import app.romanmarinov.dochintkmp.data.text.TextCleaner
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
-import app.romanmarinov.dochintkmp.domain.repository.MedicalRepository
+import app.romanmarinov.dochintkmp.domain.repository.DocumentParseRepository
 
 /**
- * Android-реализация MedicalRepository:
+ * Android-реализация DocumentParseRepository:
  * extractText — через Android OCR (Uri из fileRef), parseWithLlm — через общий OpenRouterClient.
  */
-class MedicalRepositoryImpl(
+class DocumentParseRepositoryImpl(
     private val ocrEngine: OcrEngine,
     private val openRouterClient: OpenRouterClient
-) : MedicalRepository {
+) : DocumentParseRepository {
 
     override suspend fun extractText(fileRef: String, forLlm: Boolean): String {
         val uri = Uri.parse(fileRef)
@@ -23,20 +23,19 @@ class MedicalRepositoryImpl(
             throw IllegalStateException("OCR не распознал текст в изображении")
         }
 
-        val cleanText = TextCleaner.clean(rawText)
+        val cleanText = TextCleaner.cleanHousing(rawText)
 
-        when (TextCleaner.preFilter(cleanText)) {
-            is TextCleaner.PreFilterResult.TooShort ->
+        when (TextCleaner.housingPreFilter(cleanText)) {
+            is TextCleaner.HousingPreFilterResult.TooShort ->
                 throw IllegalStateException(
-                    "Слишком мало текста. Убедитесь, что на фото — медицинский документ."
+                    "Слишком мало текста. Убедитесь, что на фото — квитанция ЖКХ."
                 )
-            is TextCleaner.PreFilterResult.NoMedicalData ->
+            is TextCleaner.HousingPreFilterResult.NoHousingBill ->
                 throw IllegalStateException(
-                    "Документ не содержит медицинских данных " +
-                    "(анализов крови, дат, показателей)." +
+                    "Документ не содержит данных квитанции ЖКХ." +
                     if (forLlm) " Запрос к LLM не отправлен." else ""
                 )
-            is TextCleaner.PreFilterResult.Ok -> { }
+            is TextCleaner.HousingPreFilterResult.Ok -> { }
         }
 
         return cleanText
@@ -46,4 +45,3 @@ class MedicalRepositoryImpl(
         return openRouterClient.parseWithLlm(apiKey, cleanText)
     }
 }
-

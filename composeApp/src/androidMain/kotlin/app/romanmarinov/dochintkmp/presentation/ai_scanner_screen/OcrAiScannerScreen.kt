@@ -74,8 +74,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.romanmarinov.dochintkmp.R
 import app.romanmarinov.dochintkmp.presentation.ui.AppTopBar
+import app.romanmarinov.dochintkmp.presentation.components.HousingBillDocumentContent
 import app.romanmarinov.dochintkmp.domain.model.FileType
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
 import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.model.OcrAiContentState
 import app.romanmarinov.dochintkmp.presentation.ai_scanner_screen.model.OcrAiErrorType
@@ -462,14 +462,6 @@ private fun AiNumberedStep(order: Int, label: String, done: Boolean) {
 
 @Composable
 private fun AiSuccessPanel(result: ParseResult) {
-    val data = result.data
-    var indicatorsExpanded by remember { mutableStateOf(true) }
-    val arrowRotation by animateFloatAsState(
-        targetValue = if (indicatorsExpanded) 180f else 0f,
-        animationSpec = tween(280),
-        label = "arrow"
-    )
-
     ElevatedCard(
         shape = RoundedCornerShape(22.dp),
         modifier = Modifier.fillMaxWidth(),
@@ -484,131 +476,7 @@ private fun AiSuccessPanel(result: ParseResult) {
             )
             Spacer(modifier = Modifier.height(14.dp))
 
-            data.documentType?.takeIf { it.isNotBlank() }?.let { type ->
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.65f)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Outlined.Description,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                stringResource(R.string.label_document_type),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                            Text(
-                                type,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(14.dp))
-            }
-
-            AiAccentInfoRow(stringResource(R.string.label_institution), data.institution)
-            
-            val isHousingBill = data.documentType?.contains("квитанция", ignoreCase = true) == true ||
-                                data.documentType?.contains("жку", ignoreCase = true) == true ||
-                                data.documentType?.contains("жкх", ignoreCase = true) == true
-            
-            val doctorLabel = if (isHousingBill) 
-                stringResource(R.string.label_payer)
-            else 
-                stringResource(R.string.label_doctor)
-            
-            val dateLabel = if (isHousingBill)
-                stringResource(R.string.label_billing_period)
-            else
-                stringResource(R.string.label_analysis_date)
-            
-            AiAccentInfoRow(doctorLabel, data.doctorName)
-            AiAccentInfoRow(dateLabel, data.analysisDate)
-
-            data.indicators?.takeIf { it.isNotEmpty() }?.let { indicators ->
-                Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { indicatorsExpanded = !indicatorsExpanded },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        stringResource(R.string.indicators_count, indicators.size),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(22.dp)
-                            .rotate(arrowRotation)
-                    )
-                }
-                AnimatedVisibility(
-                    visible = indicatorsExpanded,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    Column(modifier = Modifier.padding(top = 10.dp)) {
-                        indicators.forEach { ind ->
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        ind.name,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.weight(1f),
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        ind.value,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                ind.referenceRange?.takeIf { it.isNotBlank() }?.let { ref ->
-                                    Text(
-                                        ref,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.outline,
-                                        modifier = Modifier.padding(top = 2.dp)
-                                    )
-                                }
-                            }
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                            )
-                        }
-                    }
-                }
-            }
+            HousingBillDocumentContent(data = result.housingDocument, showDocumentTypeChip = true)
 
             if (result.totalTokens > 0) {
                 Spacer(modifier = Modifier.height(14.dp))
@@ -630,39 +498,6 @@ private fun AiSuccessPanel(result: ParseResult) {
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun AiAccentInfoRow(label: String, value: String?) {
-    if (value.isNullOrBlank()) return
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box(
-            modifier = Modifier
-                .width(4.dp)
-                .height(40.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.tertiary)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
         }
     }
 }

@@ -24,7 +24,7 @@ class OpenRouterClientTest {
         val client = clientWithResponse(
             """
             {
-              "choices":[{"message":{"content":"{\"document_type\":\"oak\",\"institution\":\"Invitro\",\"doctor_name\":\"Иванов\",\"analysis_date\":\"12.03.2025\",\"indicators\":[{\"name\":\"Гемоглобин\",\"value\":\"120\",\"reference_range\":\"120-160\"}]}"}}],
+              "choices":[{"message":{"content":"{\"document_type\":\"Квитанция ЖКХ\",\"institution\":\"ООО УК\",\"document_date\":\"2024-10\",\"service_lines\":[{\"name\":\"Отопление\",\"amount_to_pay\":\"2125\"}]}"}}],
               "usage":{"prompt_tokens":11,"completion_tokens":22,"total_tokens":33}
             }
             """.trimIndent()
@@ -33,11 +33,11 @@ class OpenRouterClientTest {
 
         val result = sut.parseWithLlm("test-key", "clean text")
 
-        assertEquals("ОАК", result.data.documentType)
-        assertEquals("Invitro", result.data.institution)
+        assertEquals("Квитанция ЖКУ", result.housingDocument.documentType)
+        assertEquals("ООО УК", result.housingDocument.institution)
         assertEquals(33, result.totalTokens)
         assertEquals(OpenRouterClient.MODEL_TEXT, result.model)
-        assertEquals("Гемоглобин", result.data.indicators?.first()?.name)
+        assertEquals("Отопление", result.housingDocument.serviceLines?.first()?.name)
     }
 
     @Test
@@ -65,10 +65,10 @@ class OpenRouterClientTest {
     }
 
     @Test
-    fun parseWithLlm_throwsUnsupported_forNonBloodDocumentType() = runBlocking {
+    fun parseWithLlm_throwsForMedicalLookingDocument() = runBlocking {
         val client = clientWithResponse(
             """
-            {"choices":[{"message":{"content":"{\"document_type\":\"Анализ мочи\",\"indicators\":[{\"name\":\"Белок\",\"value\":\"1\"}]}"}}]}
+            {"choices":[{"message":{"content":"{\"document_type\":\"ОАК\",\"service_lines\":[{\"name\":\"Гемоглобин\",\"amount_to_pay\":\"1\"}]}"}}]}
             """.trimIndent()
         )
         val sut = OpenRouterClient(client)
@@ -77,7 +77,8 @@ class OpenRouterClientTest {
             sut.parseWithLlm("key", "text")
         }
 
-        assertTrue(ex.message.orEmpty().contains("не поддерживается"))
+        val msg = ex.message.orEmpty()
+        assertTrue(msg.contains("медицинский") || msg.contains("квитац") || msg.contains("ЖКХ"))
     }
 
     @Test

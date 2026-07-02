@@ -4,9 +4,8 @@ import app.romanmarinov.dochintkmp.data.local.DatabaseDriverFactory
 import app.romanmarinov.dochintkmp.data.local.ProcessedHashStorage
 import app.romanmarinov.dochintkmp.data.util.currentTimeMillis
 import app.romanmarinov.dochintkmp.persistence.DocHintDatabase
-import app.romanmarinov.dochintkmp.persistence.MedicalResult
-import app.romanmarinov.dochintkmp.domain.model.AnalysisIndicator
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.persistence.HousingResult
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,13 +22,18 @@ class ResultsRepositoryImpl(
     private val processedHashStorage: ProcessedHashStorage
 ) : ResultsRepository {
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
+
     private val driver = driverFactory.createDriver()
     private val database = DocHintDatabase(driver)
-    private val medicalResultQueries = database.medicalResultQueries
+    private val housingResultQueries = database.housingResultQueries
     private val processedHashMutex = Mutex()
 
-    private val _results = MutableStateFlow<List<MedicalData>>(loadAll())
-    override val results: StateFlow<List<MedicalData>> = _results.asStateFlow()
+    private val _results = MutableStateFlow<List<HousingPaymentDocument>>(loadAll())
+    override val results: StateFlow<List<HousingPaymentDocument>> = _results.asStateFlow()
 
     override fun isTextAlreadyProcessed(cleanText: String): Boolean {
         val hash = normalizeForHash(cleanText)
@@ -50,28 +54,26 @@ class ResultsRepositoryImpl(
         }
     }
 
-    override fun addResult(data: MedicalData, source: String, processedText: String?) {
-        val indicatorsJson = Json.encodeToString(data.indicators ?: emptyList())
+    override fun addResult(data: HousingPaymentDocument, source: String, processedText: String?) {
+        val payloadJson = json.encodeToString(data)
         val fingerprint = processedText?.let { normalizeForHash(it) }
-        medicalResultQueries.insertResult(
+        housingResultQueries.insertResult(
             documentType = data.documentType,
-            institution = data.institution,
-            doctorName = data.doctorName,
-            analysisDate = data.analysisDate,
-            indicators = indicatorsJson,
+            documentDate = data.documentDate,
             source = source,
             createdAt = currentTimeMillis(),
-            textFingerprint = fingerprint
+            textFingerprint = fingerprint,
+            payload = payloadJson
         )
         processedText?.let { markTextAsProcessed(it) }
         _results.value = loadAll()
     }
 
     override fun removeAt(index: Int) {
-        val ids = medicalResultQueries.selectIdsOrdered().executeAsList()
+        val ids = housingResultQueries.selectIdsOrdered().executeAsList()
         if (index !in ids.indices) return
         val id = ids[index]
-        val row = medicalResultQueries.selectById(id).executeAsList().firstOrNull()
+        val row = housingResultQueries.selectById(id).executeAsList().firstOrNull()
         row?.textFingerprint?.let { fp ->
             runBlocking {
                 processedHashMutex.withLock {
@@ -80,12 +82,12 @@ class ResultsRepositoryImpl(
                 }
             }
         }
-        medicalResultQueries.deleteById(id)
+        housingResultQueries.deleteById(id)
         _results.update { loadAll() }
     }
 
     override fun clearResults() {
-        medicalResultQueries.deleteAll()
+        housingResultQueries.deleteAll()
         runBlocking {
             processedHashMutex.withLock {
                 processedHashStorage.save(emptySet())
@@ -94,24 +96,12 @@ class ResultsRepositoryImpl(
         _results.value = emptyList()
     }
 
-    private fun loadAll(): List<MedicalData> {
-        return medicalResultQueries.selectAll().executeAsList().map { it.toMedicalData() }
+    private fun loadAll(): List<HousingPaymentDocument> {
+        return housingResultQueries.selectAll().executeAsList().map { it.toHousingPaymentDocument() }
     }
 
-    private fun MedicalResult.toMedicalData(): MedicalData {
-        val indicatorsList = try {
-            Json.decodeFromString<List<AnalysisIndicator>>(indicators)
-        } catch (_: Exception) {
-            emptyList<AnalysisIndicator>()
-        }
-        return MedicalData(
-            documentType = documentType,
-            institution = institution,
-            doctorName = doctorName,
-            analysisDate = analysisDate,
-            indicators = indicatorsList.ifEmpty { null },
-            source = source
-        )
+    private fun HousingResult.toHousingPaymentDocument(): HousingPaymentDocument {
+        return json.decodeFromString(payload)
     }
 
     private fun normalizeForHash(cleanText: String): Long {

@@ -1,6 +1,6 @@
 package app.romanmarinov.dochintkmp.shared.ios
 
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.data.remote.DocumentsShareGateway
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
@@ -30,13 +30,13 @@ class DocumentListController : KoinComponent {
     private val documentsShareGateway: DocumentsShareGateway by inject()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private var latestResults: List<MedicalData> = emptyList()
+    private var latestResults: List<HousingPaymentDocument> = emptyList()
 
     /**
      * Start observing results. Callback is invoked on Main dispatcher.
      * @param onResults Called whenever the list changes
      */
-    fun observeResults(onResults: (List<MedicalData>) -> Unit) {
+    fun observeResults(onResults: (List<HousingPaymentDocument>) -> Unit) {
         observeResultsUseCase()
             .onEach {
                 latestResults = it
@@ -55,7 +55,7 @@ class DocumentListController : KoinComponent {
     }
 
     fun sendDocuments(
-        items: List<MedicalData>,
+        items: List<HousingPaymentDocument>,
         onSuccess: (code: String, expiresAt: String) -> Unit,
         onError: (String?) -> Unit
     ) {
@@ -93,10 +93,12 @@ class DocumentListController : KoinComponent {
     }
 }
 
-private fun MedicalData.sameAs(other: MedicalData): Boolean {
+private fun HousingPaymentDocument.sameAs(other: HousingPaymentDocument): Boolean {
     return documentType == other.documentType &&
         institution == other.institution &&
-        doctorName == other.doctorName &&
-        analysisDate == other.analysisDate &&
-        indicators == other.indicators
+        documentDate == other.documentDate &&
+        payerName == other.payerName &&
+        propertyAddress == other.propertyAddress &&
+        amountDueForPeriod == other.amountDueForPeriod &&
+        serviceLines == other.serviceLines
 }

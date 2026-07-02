@@ -1,10 +1,10 @@
 package app.romanmarinov.dochintkmp.presentation.documents_screen.model
 
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.presentation.documents_screen.model.DocumentsTab
 
 data class ResultsState(
-    val results: List<MedicalData> = emptyList(),
+    val results: List<HousingPaymentDocument> = emptyList(),
     val selectedTab: DocumentsTab = DocumentsTab.MINE,
     val selectionMode: Boolean = false,
     val selectedIndices: Set<Int> = emptySet(),

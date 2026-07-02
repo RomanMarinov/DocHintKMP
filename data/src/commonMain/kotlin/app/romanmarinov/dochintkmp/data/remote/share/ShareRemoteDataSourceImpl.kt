@@ -1,6 +1,6 @@
 package app.romanmarinov.dochintkmp.data.remote.share
 
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -18,10 +18,10 @@ class ShareRemoteDataSourceImpl(
     private val baseUrl: String
 ) : ShareRemoteDataSource {
 
-    override suspend fun sendDocuments(items: List<MedicalData>): ShareCreateResponse {
+    override suspend fun sendDocuments(items: List<HousingPaymentDocument>): ShareCreateResponse {
         val envelope = ShareEnvelope(
             schemaVersion = 1,
-            messageType = ShareMessageType.MEDICAL_DOCUMENT_EXPORT,
+            messageType = ShareMessageType.HOUSING_DOCUMENT_EXPORT,
             items = items.map { ShareItem(payload = it.copy(source = null)) }
         )
 
@@ -36,7 +36,7 @@ class ShareRemoteDataSourceImpl(
         return json.decodeFromString(bodyText)
     }
 
-    override suspend fun receiveDocumentsByCode(code: String): List<MedicalData> {
+    override suspend fun receiveDocumentsByCode(code: String): List<HousingPaymentDocument> {
         val trimmed = code.trim()
         val response = httpClient.get("$baseUrl/${ShareApiEndpoint.consumeShare(trimmed)}")
         val bodyText = response.bodyAsText()

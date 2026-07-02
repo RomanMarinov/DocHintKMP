@@ -13,7 +13,6 @@ import app.romanmarinov.dochintkmp.data.ocr.PdfFirstPageRenderer
 import app.romanmarinov.dochintkmp.data.ocr.TesseractOcrEngine
 import app.romanmarinov.dochintkmp.data.ocr.paddle.PaddleOcrEngine
 import app.romanmarinov.dochintkmp.data.parser.HousingBillParser
-import app.romanmarinov.dochintkmp.data.parser.RuleParser
 import app.romanmarinov.dochintkmp.data.remote.OpenRouterClient
 import app.romanmarinov.dochintkmp.data.remote.DocumentsShareGateway
 import app.romanmarinov.dochintkmp.data.remote.ShareNetworkConfig
@@ -21,9 +20,9 @@ import app.romanmarinov.dochintkmp.data.remote.createAppJson
 import app.romanmarinov.dochintkmp.data.remote.createOpenRouterHttpClient
 import app.romanmarinov.dochintkmp.data.remote.share.ShareRemoteDataSource
 import app.romanmarinov.dochintkmp.data.remote.share.ShareRemoteDataSourceImpl
-import app.romanmarinov.dochintkmp.data.repository.MedicalRepositoryImpl
+import app.romanmarinov.dochintkmp.data.repository.DocumentParseRepositoryImpl
 import app.romanmarinov.dochintkmp.data.repository.ResultsRepositoryImpl
-import app.romanmarinov.dochintkmp.domain.repository.MedicalRepository
+import app.romanmarinov.dochintkmp.domain.repository.DocumentParseRepository
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
@@ -73,7 +72,6 @@ val dataModule = module {
     single { DocxTextExtractor(androidContext()) }
 
     single { HousingBillParser() }
-    single { RuleParser() }
 
     single<ShareRemoteDataSource> {
         ShareRemoteDataSourceImpl(
@@ -84,8 +82,8 @@ val dataModule = module {
     }
     single { DocumentsShareGateway(get()) }
 
-    single<MedicalRepository> {
-        MedicalRepositoryImpl(get(), get())
+    single<DocumentParseRepository> {
+        DocumentParseRepositoryImpl(get(), get())
     }
 
     single<ResultsRepository> { ResultsRepositoryImpl(get(), get()) }

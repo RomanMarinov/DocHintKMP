@@ -1,1 +1,0 @@
-ALTER TABLE MedicalResult ADD COLUMN textFingerprint INTEGER;

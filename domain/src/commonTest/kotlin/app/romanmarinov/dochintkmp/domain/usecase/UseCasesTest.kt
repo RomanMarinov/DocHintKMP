@@ -1,8 +1,8 @@
 package app.romanmarinov.dochintkmp.domain.usecase
 
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
-import app.romanmarinov.dochintkmp.domain.repository.MedicalRepository
+import app.romanmarinov.dochintkmp.domain.repository.DocumentParseRepository
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +19,7 @@ class UseCasesTest {
     fun addResultUseCase_addsResult_andMarksProcessed_whenProcessedTextProvided() {
         val repo = FakeResultsRepository()
         val useCase = AddResultUseCase(repo)
-        val data = MedicalData(documentType = "ОАК")
+        val data = HousingPaymentDocument(documentType = "Квитанция ЖКУ")
 
         useCase(data, processedText = "clean text", source = ResultsRepository.SOURCE_AI)
 
@@ -35,7 +35,7 @@ class UseCasesTest {
         val repo = FakeResultsRepository()
         val useCase = AddResultUseCase(repo)
 
-        useCase(MedicalData(documentType = "БАК"), processedText = null)
+        useCase(HousingPaymentDocument(documentType = "Квитанция ЖКУ"), processedText = null)
 
         assertEquals(1, repo.addCalls.size)
         assertTrue(repo.markedTexts.isEmpty())
@@ -83,9 +83,9 @@ class UseCasesTest {
     }
 
     @Test
-    fun parseWithLlmUseCase_delegatesToMedicalRepository() = runBlocking {
-        val repo = FakeMedicalRepository(
-            parseResult = ParseResult(data = MedicalData(documentType = "ОАК"), totalTokens = 10)
+    fun parseWithLlmUseCase_delegatesToRepository() = runBlocking {
+        val repo = FakeDocumentParseRepository(
+            parseResult = ParseResult(housingDocument = HousingPaymentDocument(documentType = "Квитанция ЖКУ"), totalTokens = 10)
         )
         val useCase = ParseWithLlmUseCase(repo)
 
@@ -98,7 +98,7 @@ class UseCasesTest {
 
     @Test
     fun extractTextFromImageUseCase_delegatesWithForLlmFlag() = runBlocking {
-        val repo = FakeMedicalRepository(extractedText = "parsed")
+        val repo = FakeDocumentParseRepository(extractedText = "parsed")
         val useCase = ExtractTextFromImageUseCase(repo)
 
         val result = useCase("file://photo.jpg", forLlm = false)
@@ -111,8 +111,8 @@ class UseCasesTest {
     private class FakeResultsRepository(
         private val isDuplicate: Boolean = false
     ) : ResultsRepository {
-        override val results: StateFlow<List<MedicalData>> = MutableStateFlow(emptyList())
-        val addCalls = mutableListOf<Triple<MedicalData, String, String?>>()
+        override val results: StateFlow<List<HousingPaymentDocument>> = MutableStateFlow(emptyList())
+        val addCalls = mutableListOf<Triple<HousingPaymentDocument, String, String?>>()
         val markedTexts = mutableListOf<String>()
         var lastDuplicateQuery: String? = null
         var clearCalled: Boolean = false
@@ -127,7 +127,7 @@ class UseCasesTest {
             markedTexts.add(cleanText)
         }
 
-        override fun addResult(data: MedicalData, source: String, processedText: String?) {
+        override fun addResult(data: HousingPaymentDocument, source: String, processedText: String?) {
             addCalls.add(Triple(data, source, processedText))
             processedText?.let { markTextAsProcessed(it) }
         }
@@ -141,10 +141,10 @@ class UseCasesTest {
         }
     }
 
-    private class FakeMedicalRepository(
+    private class FakeDocumentParseRepository(
         private val extractedText: String = "",
-        private val parseResult: ParseResult = ParseResult(MedicalData())
-    ) : MedicalRepository {
+        private val parseResult: ParseResult = ParseResult(HousingPaymentDocument())
+    ) : DocumentParseRepository {
         var lastExtractFileRef: String? = null
         var lastExtractForLlm: Boolean = true
         var lastApiKey: String? = null

@@ -1,6 +1,5 @@
 package app.romanmarinov.dochintkmp.shared.ios
 
-import app.romanmarinov.dochintkmp.data.mapper.toMedicalData
 import app.romanmarinov.dochintkmp.data.parser.HousingBillParser
 import app.romanmarinov.dochintkmp.data.text.TextCleaner
 import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
@@ -52,7 +51,7 @@ class OfflineScannerController : KoinComponent {
     }
 
     fun saveDocument(data: HousingPaymentDocument, processedText: String) {
-        addResultUseCase(data.toMedicalData(), processedText, ResultsRepository.SOURCE_OFFLINE)
+        addResultUseCase(data, processedText, ResultsRepository.SOURCE_OFFLINE)
     }
 
     data class ProcessResult(

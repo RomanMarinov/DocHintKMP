@@ -2,7 +2,7 @@ package app.romanmarinov.dochintkmp.presentation.ai_scanner_screen
 
 import android.net.Uri
 import app.romanmarinov.dochintkmp.domain.model.FileType
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
@@ -20,7 +20,7 @@ interface AiScannerPort {
     suspend fun extractTextFromImage(fileRef: String): String
     suspend fun parseWithLlm(apiKey: String, cleanText: String): ParseResult
     fun isDuplicate(cleanText: String): Boolean
-    fun addResult(data: MedicalData, processedText: String)
+    fun addResult(data: HousingPaymentDocument, processedText: String)
 }
 
 class AiScannerPortImpl(
@@ -42,7 +42,7 @@ class AiScannerPortImpl(
 
     override fun isDuplicate(cleanText: String): Boolean = checkDuplicateUseCase(cleanText)
 
-    override fun addResult(data: MedicalData, processedText: String) {
+    override fun addResult(data: HousingPaymentDocument, processedText: String) {
         addResultUseCase(data, processedText, ResultsRepository.SOURCE_AI)
     }
 }

@@ -1,11 +1,13 @@
 package app.romanmarinov.dochintkmp.presentation.documents_screen.util
 
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 
-internal fun MedicalData.sameAs(other: MedicalData): Boolean {
+internal fun HousingPaymentDocument.sameAs(other: HousingPaymentDocument): Boolean {
     return documentType == other.documentType &&
             institution == other.institution &&
-            doctorName == other.doctorName &&
-            analysisDate == other.analysisDate &&
-            indicators == other.indicators
+            documentDate == other.documentDate &&
+            payerName == other.payerName &&
+            propertyAddress == other.propertyAddress &&
+            amountDueForPeriod == other.amountDueForPeriod &&
+            serviceLines == other.serviceLines
 }

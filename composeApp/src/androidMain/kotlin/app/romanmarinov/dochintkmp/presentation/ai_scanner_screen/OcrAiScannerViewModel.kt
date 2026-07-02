@@ -112,7 +112,7 @@ class OcrAiScannerViewModel(
     private fun saveDocument() {
         val success = _uiState.value.contentState as? OcrAiContentState.Success ?: return
         viewModelScope.launch {
-            port.addResult(success.parseResult.data, success.cleanText)
+            port.addResult(success.parseResult.housingDocument, success.cleanText)
             updateState { it.copy(toastType = OcrAiToastType.ADDED_TO_DOCUMENTS) }
             resetState()
         }

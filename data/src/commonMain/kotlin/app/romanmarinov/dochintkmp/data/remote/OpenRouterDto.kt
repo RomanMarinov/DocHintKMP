@@ -8,7 +8,7 @@ data class OpenRouterRequest(
     val model: String = OpenRouterClient.MODEL_TEXT,
     val messages: List<OpenRouterMessage>,
     val temperature: Double = 0.0,
-    @SerialName("max_tokens") val maxTokens: Int = 2500
+    @SerialName("max_tokens") val maxTokens: Int = 4000
 )
 
 @Serializable
@@ -48,19 +48,38 @@ data class Usage(
 )
 
 @Serializable
-data class MedicalDataDto(
+data class HousingPaymentDocumentDto(
     @SerialName("document_type") val documentType: String? = null,
     @SerialName("institution") val institution: String? = null,
-    @SerialName("doctor_name") val doctorName: String? = null,
-    @SerialName("analysis_date") val analysisDate: String? = null,
-    @SerialName("indicators") val indicators: List<IndicatorDto>? = null
+    @SerialName("document_date") val documentDate: String? = null,
+    @SerialName("source") val source: String? = null,
+    @SerialName("category") val category: String? = null,
+    @SerialName("document_number") val documentNumber: String? = null,
+    @SerialName("payment_document_id") val paymentDocumentId: String? = null,
+    @SerialName("personal_account_number") val personalAccountNumber: String? = null,
+    @SerialName("unified_personal_account") val unifiedPersonalAccount: String? = null,
+    @SerialName("housing_utilities_id") val housingUtilitiesId: String? = null,
+    @SerialName("property_address") val propertyAddress: String? = null,
+    @SerialName("payer_name") val payerName: String? = null,
+    @SerialName("total_area_sqm") val totalAreaSqm: String? = null,
+    @SerialName("living_area_sqm") val livingAreaSqm: String? = null,
+    @SerialName("residents_count") val residentsCount: String? = null,
+    @SerialName("amount_due_for_period") val amountDueForPeriod: String? = null,
+    @SerialName("amount_paid") val amountPaid: String? = null,
+    @SerialName("last_payment_date") val lastPaymentDate: String? = null,
+    @SerialName("debt_from_previous_periods") val debtFromPreviousPeriods: String? = null,
+    @SerialName("service_lines") val serviceLines: List<HousingServiceLineDto>? = null
 )
 
 @Serializable
-data class IndicatorDto(
+data class HousingServiceLineDto(
     val name: String? = null,
-    val value: String? = null,
-    @SerialName("reference_range") val referenceRange: String? = null
+    val group: String? = null,
+    val unit: String? = null,
+    val volume: String? = null,
+    @SerialName("volume_basis") val volumeBasis: String? = null,
+    val tariff: String? = null,
+    @SerialName("amount_to_pay") val amountToPay: String? = null
 )
 
 @Serializable

@@ -27,7 +27,7 @@ android {
 
 dependencies {
     implementation(projects.composeApp)
-    // Tests reference Android+KMP types directly (ApiKeyStorage, FileType, MedicalData, ParseResult),
+    // Tests reference Android+KMP types directly (ApiKeyStorage, FileType, HousingPaymentDocument, ParseResult),
     // so we need these modules on the test compilation classpath.
     testImplementation(projects.data)
     testImplementation(projects.domain)

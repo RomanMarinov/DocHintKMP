@@ -13,14 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.presentation.documents_screen.components.MineTabEmptyState
 import app.romanmarinov.dochintkmp.presentation.documents_screen.components.MineTabResultCard
 
 @Composable
 fun DocumentsTabContent(
     modifier: Modifier = Modifier,
-    items: List<MedicalData>,
+    items: List<HousingPaymentDocument>,
     selectionMode: Boolean,
     selectedIndices: Set<Int>,
     bottomInset: Dp,

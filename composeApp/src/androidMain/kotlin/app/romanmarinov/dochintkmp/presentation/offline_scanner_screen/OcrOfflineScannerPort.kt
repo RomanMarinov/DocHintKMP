@@ -1,7 +1,6 @@
 package app.romanmarinov.dochintkmp.presentation.offline_scanner_screen
 
 import android.net.Uri
-import app.romanmarinov.dochintkmp.data.mapper.toMedicalData
 import app.romanmarinov.dochintkmp.data.parser.HousingBillParser
 import app.romanmarinov.dochintkmp.data.usecase.ExtractTextOfflineUseCase
 import app.romanmarinov.dochintkmp.domain.model.FileType
@@ -37,6 +36,6 @@ class OcrOfflineScannerPortImpl(
     override fun parse(cleanText: String): HousingPaymentDocument = housingBillParser.parse(cleanText)
 
     override fun addResult(data: HousingPaymentDocument, processedText: String) {
-        addResultUseCase(data.toMedicalData(), processedText, ResultsRepository.SOURCE_OFFLINE)
+        addResultUseCase(data, processedText, ResultsRepository.SOURCE_OFFLINE)
     }
 }

@@ -1,8 +1,8 @@
 package app.romanmarinov.dochintkmp.data.remote
 
 import app.romanmarinov.dochintkmp.data.mapper.toDomain
-import app.romanmarinov.dochintkmp.domain.model.AnalysisIndicator
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingBillCategory
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.model.ParseResult
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -49,12 +49,11 @@ class OpenRouterClient(
         val json = response.choices?.firstOrNull()?.message?.content
             ?: throw IllegalStateException("Модель вернула пустой ответ. Попробуйте ещё раз.")
 
-        val domainData = parseResponse(json)
-        validateDocumentType(domainData)
+        val normalized = parseResponse(json)
 
         val usage = response.usage
         return ParseResult(
-            data = domainData,
+            housingDocument = normalized,
             promptTokens = usage?.promptTokens ?: 0,
             completionTokens = usage?.completionTokens ?: 0,
             totalTokens = usage?.totalTokens ?: 0,
@@ -70,33 +69,57 @@ class OpenRouterClient(
             }.body()
             response.data
         } catch (e: Exception) {
-            // simplified logging to avoid cross-module dependency
             println("OpenRouterClient getKeyInfo failed: ${e.message}")
             null
         }
     }
 
-    private fun parseResponse(raw: String): MedicalData {
+    private fun parseResponse(raw: String): HousingPaymentDocument {
         val extracted = extractJson(raw)
         return try {
-            val dto = json.decodeFromString<MedicalDataDto>(extracted)
-            normalizeDocumentType(dto.toDomain())
+            val dto = json.decodeFromString<HousingPaymentDocumentDto>(extracted)
+            val doc = dto.toDomain()
+            validateHousingDocument(doc)
+            normalizeHousingDocument(doc)
         } catch (e: Exception) {
-            if (extracted.contains("},{")) {
-                val repaired = repairTruncatedJson(extracted)
-                if (repaired != null) {
-                    try {
-                        val dto = json.decodeFromString<MedicalDataDto>(repaired)
-                        return normalizeDocumentType(dto.toDomain())
-                    } catch (_: Exception) { }
-                }
+            val repaired = repairTruncatedJson(extracted)
+            if (repaired != null) {
+                try {
+                    val dto = json.decodeFromString<HousingPaymentDocumentDto>(repaired)
+                    val doc = dto.toDomain()
+                    validateHousingDocument(doc)
+                    return normalizeHousingDocument(doc)
+                } catch (_: Exception) { }
             }
             println("OpenRouterClient parseResponse failed: ${e.message}")
             println("OpenRouterClient extracted (first 500): ${extracted.take(500)}")
             throw IllegalStateException(
-                "Не удалось распознать данные в документе. Проверьте, что документ — анализ крови."
+                "Не удалось распознать данные в квитанции. Проверьте, что документ — квитанция ЖКХ."
             )
         }
+    }
+
+    private fun validateHousingDocument(doc: HousingPaymentDocument) {
+        val type = doc.documentType.lowercase()
+        if (type.contains("оак") || type.contains("бак") || type.contains("анализ")) {
+            throw IllegalStateException("Документ похож на медицинский анализ. Приложение поддерживает только квитанции ЖКХ.")
+        }
+        if (doc.documentType.isBlank()) {
+            throw IllegalStateException("Не удалось распознать тип документа. Проверьте, что документ — квитанция ЖКХ.")
+        }
+        if (doc.serviceLines.isNullOrEmpty()) {
+            throw IllegalStateException("Не найдены услуги в квитанции. Проверьте, что документ — квитанция ЖКХ.")
+        }
+    }
+
+    private fun normalizeHousingDocument(doc: HousingPaymentDocument): HousingPaymentDocument {
+        val rawType = doc.documentType.lowercase()
+        val isCapital = rawType.contains("капремонт") || rawType.contains("капитальный")
+        val category = if (isCapital) HousingBillCategory.CAPITAL_REPAIR else doc.category
+        return doc.copy(
+            documentType = "Квитанция ЖКУ",
+            category = category
+        )
     }
 
     private fun extractJson(raw: String): String {
@@ -123,61 +146,6 @@ class OpenRouterClient(
         return json.substring(0, lastComplete + 1) + "]}"
     }
 
-    private fun validateDocumentType(data: MedicalData) {
-        var type = data.documentType?.trim()?.lowercase()
-
-        val indicators = data.indicators
-        if (type.isNullOrBlank() && !indicators.isNullOrEmpty()) {
-            type = inferDocumentType(indicators)
-        }
-
-        if (type.isNullOrBlank()) {
-            throw IllegalStateException("Не удалось распознать данные в документе")
-        }
-        
-        val isOak = type.contains("оак") || type.contains("oak") || type.contains("общий анализ") || type.contains("клинический")
-        val isBak = type.contains("бак") || type.contains("bak") || type.contains("биохим")
-        val isHousing = type.contains("квитанция") || type.contains("жку") || type.contains("жкх") || 
-                       type.contains("коммунальн") || type.contains("платёж") || type.contains("платеж")
-        
-        if (!isOak && !isBak && !isHousing) {
-            throw IllegalStateException("Данный тип документа не поддерживается. Используйте анализы крови или квитанции ЖКХ")
-        }
-    }
-
-    private fun inferDocumentType(indicators: List<AnalysisIndicator>): String? {
-        val oakNames = setOf("гемоглобин", "эритроциты", "лейкоциты", "тромбоциты", "соэ", "нейтрофилы", "mcv", "rdw", "эозинофилы", "базофилы")
-        val bakNames = setOf("глюкоза", "холестерин", "алт", "аст", "креатинин", "билирубин", "мочевина", "калий", "натрий")
-        val housingNames = setOf("содержание", "отопление", "водоснабжение", "электричество", "газоснабжение", "вывоз", "водоотведение", "услуга", "тариф")
-        
-        val names = indicators.map { it.name.lowercase() }.toSet()
-        val oakCount = names.count { n -> oakNames.any { n.contains(it) } }
-        val bakCount = names.count { n -> bakNames.any { n.contains(it) } }
-        val housingCount = names.count { n -> housingNames.any { n.contains(it) } }
-        
-        return when {
-            housingCount >= 2 -> "Квитанция ЖКХ"
-            oakCount >= bakCount && oakCount > 0 -> "ОАК"
-            bakCount > 0 -> "Биохимический анализ крови"
-            else -> null
-        }
-    }
-
-    private fun normalizeDocumentType(data: MedicalData): MedicalData {
-        val t = data.documentType?.trim()?.lowercase()
-        val normalized = when {
-            t == null || t.isBlank() -> data.documentType
-            t == "oak" || t == "оак" || t.contains("общий анализ") || t.contains("клинический") -> "ОАК"
-            t == "bak" || t == "бак" || t.contains("биохим") -> "Биохимический анализ крови"
-            t.contains("квитанция") || t.contains("жку") || t.contains("жкх") || 
-            t.contains("коммунальн") || t.contains("платёж") || t.contains("платеж") -> 
-                if (t.contains("капремонт") || t.contains("капитальный")) "Квитанция ЖКХ (капремонт)" 
-                else "Квитанция ЖКХ (основная)"
-            else -> data.documentType
-        }
-        return data.copy(documentType = normalized)
-    }
-
     companion object {
         const val BASE_URL = "https://openrouter.ai/"
         const val MODEL_TEXT = "gpt-4o-mini"
@@ -188,54 +156,55 @@ class OpenRouterClient(
         }
 
         private const val SYSTEM_PROMPT =
-            "Ты — универсальный парсер документов. Извлекаешь структурированные данные и НЕ СМЕШИВАЕШЬ поля между типами документов.\n\n" +
-            "ПОДДЕРЖИВАЕМЫЕ ТИПЫ ДОКУМЕНТОВ:\n" +
-            "1. ОАК (общий анализ крови)\n" +
-            "2. БАК (биохимический анализ крови)\n" +
-            "3. ЖКХ (квитанции за коммунальные услуги)\n\n" +
-            "ВАЖНО для ОАК: Эозинофилы и Базофилы имеют ДВА показателя каждые: \"..., %\" и \"..., абс.\" — это разные значения, извлеки ОБА!\n\n" +
+            "Ты — парсер квитанций за коммунальные услуги (ЖКХ). Извлекаешь структурированные данные в JSON.\n\n" +
+            "ПОДДЕРЖИВАЕМЫЙ ТИП ДОКУМЕНТА:\n" +
+            "- ЖКХ (квитанции за коммунальные услуги: основная квитанция и квитанция капремонта)\n\n" +
             "ОПРЕДЕЛИ ТИП ДОКУМЕНТА:\n" +
-            "- ОАК: содержит гемоглобин, эритроциты, лейкоциты, тромбоциты, СОЭ\n" +
-            "- БАК: содержит глюкозу, холестерин, билирубин, АЛТ, АСТ, креатинин\n" +
-            "- ЖКХ: содержит услуги (отопление, водоснабжение, электричество), УК, плательщика, квитанцию\n\n" +
-            "ФОРМАТ JSON-ответа (ОБЯЗАТЕЛЬНО ПРАВИЛЬНЫЕ ПОЛЯ ДЛЯ КАЖДОГО ТИПА):\n\n" +
-            "==== ПРИМЕР ДЛЯ ОАК ====\n" +
-            "{\n" +
-            "  \"document_type\": \"ОАК\",\n" +
-            "  \"institution\": \"ИНВИТРО лаборатория\",\n" +
-            "  \"doctor_name\": \"Иванов И.И.\",\n" +
-            "  \"analysis_date\": \"15.10.2024\",\n" +
-            "  \"indicators\": [\n" +
-            "    {\"name\": \"Гемоглобин\", \"value\": \"120 г/л\", \"reference_range\": \"120-160\"},\n" +
-            "    {\"name\": \"Эритроциты\", \"value\": \"4.2 млн/мкл\", \"reference_range\": \"4.0-5.0\"},\n" +
-            "    {\"name\": \"Эозинофилы, %\", \"value\": \"2%\", \"reference_range\": \"0-5%\"},\n" +
-            "    {\"name\": \"Эозинофилы, абс.\", \"value\": \"150 /мкл\", \"reference_range\": \"0-400\"}\n" +
-            "  ]\n" +
-            "}\n\n" +
+            "- ЖКХ: содержит услуги (отопление, водоснабжение, электричество, газоснабжение, водоотведение), управляющую компанию, плательщика, лицевой счёт, адрес.\n\n" +
+            "ФОРМАТ JSON-ответа (ПОЛНАЯ СХЕМА — ОБЯЗАТЕЛЬНО ИЗВЛЕКАЙ ВСЕ ДОСТУПНЫЕ ПОЛЯ):\n\n" +
             "==== ПРИМЕР ДЛЯ ЖКХ ====\n" +
             "{\n" +
-            "  \"document_type\": \"Квитанция ЖКХ (основная)\",\n" +
+            "  \"document_type\": \"Квитанция ЖКХ\",\n" +
             "  \"institution\": \"ООО УК 'Дом'\",\n" +
-            "  \"doctor_name\": \"Петров Сергей Викторович\",\n" +
-            "  \"analysis_date\": \"2024-10\",\n" +
-            "  \"indicators\": [\n" +
-            "    {\"name\": \"Содержание и ремонт\", \"value\": \"2500 ₽\", \"reference_range\": \"12 кв.м\"},\n" +
-            "    {\"name\": \"Отопление\", \"value\": \"3100 ₽\", \"reference_range\": \"0.5 Гкал\"},\n" +
-            "    {\"name\": \"Холодное водоснабжение\", \"value\": \"800 ₽\", \"reference_range\": \"5 куб.м\"},\n" +
-            "    {\"name\": \"Электроэнергия\", \"value\": \"1200 ₽\", \"reference_range\": \"120 кВт·ч\"}\n" +
+            "  \"document_date\": \"2024-10\",\n" +
+            "  \"category\": \"MAIN\",\n" +
+            "  \"document_number\": \"12345\",\n" +
+            "  \"payment_document_id\": \"ЕРЦ-001\",\n" +
+            "  \"personal_account_number\": \"40-0001-01\",\n" +
+            "  \"unified_personal_account\": \"000000000000\",\n" +
+            "  \"housing_utilities_id\": \"1234567\",\n" +
+            "  \"property_address\": \"г. Москва, ул. Ленина, д. 1, кв. 1\",\n" +
+            "  \"payer_name\": \"Петров Сергей Викторович\",\n" +
+            "  \"total_area_sqm\": \"60.5\",\n" +
+            "  \"living_area_sqm\": \"42.0\",\n" +
+            "  \"residents_count\": \"3\",\n" +
+            "  \"amount_due_for_period\": \"7600\",\n" +
+            "  \"amount_paid\": \"7600\",\n" +
+            "  \"last_payment_date\": \"10.10.2024\",\n" +
+            "  \"debt_from_previous_periods\": \"0\",\n" +
+            "  \"service_lines\": [\n" +
+            "    {\"name\": \"Содержание и ремонт\", \"group\": \"MAINTENANCE\", \"unit\": \"кв.м\", \"volume\": \"60.5\", \"volume_basis\": \"METER\", \"tariff\": \"28.50\", \"amount_to_pay\": \"1724\"},\n" +
+            "    {\"name\": \"Отопление\", \"group\": \"UTILITIES\", \"unit\": \"Гкал\", \"volume\": \"0.85\", \"volume_basis\": \"METER\", \"tariff\": \"2500.00\", \"amount_to_pay\": \"2125\"},\n" +
+            "    {\"name\": \"Холодное водоснабжение\", \"group\": \"UTILITIES\", \"unit\": \"куб.м\", \"volume\": \"5\", \"volume_basis\": \"METER\", \"tariff\": \"38.48\", \"amount_to_pay\": \"192\"},\n" +
+            "    {\"name\": \"Электроэнергия\", \"group\": \"UTILITIES\", \"unit\": \"кВт·ч\", \"volume\": \"120\", \"volume_basis\": \"METER\", \"tariff\": \"5.38\", \"amount_to_pay\": \"646\"}\n" +
             "  ]\n" +
             "}\n\n" +
             "ПРАВИЛА ЗАПОЛНЕНИЯ:\n" +
-            "- document_type: точное название типа документа (ОАК, БАК, Квитанция ЖКХ (основная) или Квитанция ЖКХ (капремонт))\n" +
-            "- institution: для анализов=лаборатория, для ЖКХ=управляющая компания\n" +
-            "- doctor_name: для анализов=врач, для ЖКХ=ПЛАТЕЛЬЩИК (ФИО хозяина квартиры)\n" +
-            "- analysis_date: для анализов=дата анализа (ДД.ММ.ГГГГ), для ЖКХ=период платежа (ГГГГ-ММ)\n" +
-            "- indicators: показатели с name, value, reference_range\n\n" +
+            "- Используй ТОЛЬКО поля схемы выше с service_lines. НЕ возвращай indicators, doctor_name, analysis_date.\n" +
+            "- document_type: точное название типа документа (Квитанция ЖКХ). Для капремонта — \"Квитанция ЖКХ (капремонт)\".\n" +
+            "- institution: управляющая компания/исполнитель (УК, ТСЖ, ЕРЦ и т.п.).\n" +
+            "- payer_name: ФИО плательщика.\n" +
+            "- document_date: период платежа (ГГГГ-ММ или ММ.ГГГГ).\n" +
+            "- property_address: адрес помещения.\n" +
+            "- category: MAIN или CAPITAL_REPAIR (для квитанций капремонта).\n" +
+            "- group услуги: MAINTENANCE (содержание/ремонт), COMMON_PROPERTY_ODN (ОДН), UTILITIES (коммунальные: вода, отопление, газ, электричество, водоотведение), ADDITIONAL, CAPITAL_REPAIR.\n" +
+            "- volume_basis: METER (по счётчику), NORM (по нормативу), OTHER.\n" +
+            "- Извлекай ВСЕ суммы, тарифы, объёмы и единицы измерения как есть (числом, без символа ₽).\n" +
+            "- Если какого-то поля нет в документе — опусти его или верни null. НЕ ВЫДУМЫВАЙ значения.\n\n" +
             "ОБЯЗАТЕЛЬНО:\n" +
             "1. Верни ТОЛЬКО JSON-объект, БЕЗ markdown кода (без ```), БЕЗ объяснений\n" +
             "2. Не добавляй лишние поля в JSON\n" +
-            "3. indicators ОБЯЗАТЕЛЬНО должен быть непустой массив\n" +
-            "4. НЕ СМЕШИВАЙ поля между типами (не пиши врача для ЖКХ, не пиши услуги для анализов)"
+            "3. service_lines ОБЯЗАТЕЛЬНО непустой массив\n" +
+            "4. Используй точные имена полей в snake_case"
     }
 }
-

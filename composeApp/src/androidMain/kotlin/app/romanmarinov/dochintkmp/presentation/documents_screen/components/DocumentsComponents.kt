@@ -25,8 +25,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FolderOpen
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -46,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,10 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.romanmarinov.dochintkmp.R
-import app.romanmarinov.dochintkmp.data.mapper.displayLabel
-import app.romanmarinov.dochintkmp.data.mapper.toHousingPaymentDocumentOrNull
 import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
 import app.romanmarinov.dochintkmp.presentation.components.HousingBillDocumentContent
 import app.romanmarinov.dochintkmp.presentation.components.collapsedDetailLine
 import app.romanmarinov.dochintkmp.presentation.components.collapsedSubtitle
@@ -102,7 +96,7 @@ fun EmptyState(modifier: Modifier) {
 
 @Composable
 fun ResultCard(
-    data: MedicalData,
+    data: HousingPaymentDocument,
     selectionMode: Boolean,
     selected: Boolean,
     onToggleSelect: () -> Unit,
@@ -142,12 +136,12 @@ fun ResultCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            data.documentType ?: stringResource(R.string.analysis_default),
+                            data.documentType,
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        data.analysisDate?.let {
+                        data.documentDate?.let {
                             Text(
                                 it,
                                 style = MaterialTheme.typography.bodySmall,
@@ -171,85 +165,12 @@ fun ResultCard(
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(12.dp))
 
-            val housingBill = data.toHousingPaymentDocumentOrNull()
-            if (housingBill != null) {
-                HousingBillDocumentContent(data = housingBill)
-            } else {
-                data.institution?.let { MetaRow(title = stringResource(R.string.label_institution), value = it) }
-                data.doctorName?.let { MetaRow(title = stringResource(R.string.label_doctor), value = it) }
-
-                data.indicators?.takeIf { it.isNotEmpty() }?.let { indicators ->
-                    Spacer(modifier = Modifier.height(12.dp))
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                stringResource(R.string.indicators_short_format, indicators.size),
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            labelColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        ),
-                        border = null
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            indicators.forEach { ind ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 2.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        ind.displayLabel(),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        ind.value,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                    ind.referenceRange?.let {
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            it,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.outline
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            HousingBillDocumentContent(data = data)
         }
     }
 }
 
-@Composable
-private fun MetaRow(title: String, value: String) {
-    Row(
-        modifier = Modifier.padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(title, style = MaterialTheme.typography.bodyMedium)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(value, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
-/** Пустое состояние только для вкладки «Документы» (свои анализы). */
+/** Пустое состояние только для вкладки «Документы» (свои квитанции). */
 @Composable
 fun MineTabEmptyState(modifier: Modifier = Modifier) {
     Column(
@@ -305,14 +226,13 @@ fun MineTabEmptyState(modifier: Modifier = Modifier) {
 /** Карточка документа на вкладке «Документы» — сворачивается по клику. */
 @Composable
 fun MineTabResultCard(
-    data: MedicalData,
+    data: HousingPaymentDocument,
     selectionMode: Boolean,
     selected: Boolean,
     onToggleSelect: () -> Unit,
     onDelete: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val housingBill = remember(data) { data.toHousingPaymentDocumentOrNull() }
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = tween(280),
@@ -365,8 +285,7 @@ fun MineTabResultCard(
                         )
                 ) {
                     DocumentsCardCollapsedSummary(
-                        data = data,
-                        housingBill = housingBill
+                        data = data
                     )
 
                     AnimatedVisibility(
@@ -378,11 +297,7 @@ fun MineTabResultCard(
                             Spacer(modifier = Modifier.height(18.dp))
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Spacer(modifier = Modifier.height(10.dp))
-                            if (housingBill != null) {
-                                HousingBillDocumentContent(data = housingBill)
-                            } else {
-                                DocumentsMedicalExpandedBody(data = data)
-                            }
+                            HousingBillDocumentContent(data = data)
                         }
                     }
                 }
@@ -431,8 +346,7 @@ fun MineTabResultCard(
 
 @Composable
 private fun DocumentsCardCollapsedSummary(
-    data: MedicalData,
-    housingBill: HousingPaymentDocument?
+    data: HousingPaymentDocument
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -449,144 +363,31 @@ private fun DocumentsCardCollapsedSummary(
         Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                data.documentType ?: stringResource(R.string.analysis_default),
+                data.documentType,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            if (housingBill != null) {
-                housingBill.collapsedSubtitle().takeIf { it.isNotBlank() }?.let { subtitle ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                housingBill.collapsedDetailLine()?.let { detail ->
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        detail,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            } else {
-                data.analysisDate?.let { date ->
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        date,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                buildList {
-                    data.institution?.takeIf { it.isNotBlank() }?.let { add(it) }
-                    data.indicators?.size?.takeIf { it > 0 }?.let {
-                        add(stringResource(R.string.indicators_short_format, it))
-                    }
-                }.joinToString(" · ").takeIf { it.isNotBlank() }?.let { detail ->
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        detail,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DocumentsMedicalExpandedBody(data: MedicalData) {
-    data.institution?.takeIf { it.isNotBlank() }?.let {
-        DocumentsPlainMetaRow(stringResource(R.string.label_institution), it)
-    }
-    data.doctorName?.takeIf { it.isNotBlank() }?.let {
-        DocumentsPlainMetaRow(stringResource(R.string.label_doctor), it)
-    }
-
-    data.indicators?.takeIf { it.isNotEmpty() }?.let { indicators ->
-        Spacer(modifier = Modifier.height(10.dp))
-        AssistChip(
-            onClick = {},
-            label = {
+            data.collapsedSubtitle().takeIf { it.isNotBlank() }?.let { subtitle ->
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    stringResource(R.string.indicators_short_format, indicators.size),
-                    style = MaterialTheme.typography.labelSmall
+                    subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
                 )
-            },
-            colors = AssistChipDefaults.assistChipColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
-                labelColor = MaterialTheme.colorScheme.onSecondaryContainer
-            ),
-            border = null
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                indicators.forEach { ind ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            ind.displayLabel(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            ind.value,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    ind.referenceRange?.takeIf { it.isNotBlank() }?.let { ref ->
-                        Text(
-                            ref,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
-                }
+            }
+            data.collapsedDetailLine()?.let { detail ->
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    detail,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
 }
-
-@Composable
-private fun DocumentsPlainMetaRow(label: String, value: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-    ) {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-

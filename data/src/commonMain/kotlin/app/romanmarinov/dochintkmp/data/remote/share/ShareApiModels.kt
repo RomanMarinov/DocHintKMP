@@ -1,6 +1,6 @@
 package app.romanmarinov.dochintkmp.data.remote.share
 
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -13,14 +13,14 @@ data class ShareEnvelope(
 
 @Serializable
 enum class ShareMessageType {
-    @SerialName("medical_document_export")
-    MEDICAL_DOCUMENT_EXPORT
+    @SerialName("housing_document_export")
+    HOUSING_DOCUMENT_EXPORT
 }
 
 @Serializable
 data class ShareItem(
-    val kind: String = "medical_analysis",
-    val payload: MedicalData
+    val kind: String = "housing_bill",
+    val payload: HousingPaymentDocument
 )
 
 @Serializable

@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.romanmarinov.dochintkmp.R
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.presentation.documents_screen.components.EmptyState
 import app.romanmarinov.dochintkmp.presentation.documents_screen.components.ResultCard
 
@@ -29,7 +29,7 @@ fun ReceivedTabContent(
     modifier: Modifier = Modifier,
     inputCode: String,
     networkBusy: Boolean,
-    items: List<MedicalData>,
+    items: List<HousingPaymentDocument>,
     onInputCodeChange: (String) -> Unit,
     onClick: () -> Unit,
     onDelete: (Int) -> Unit

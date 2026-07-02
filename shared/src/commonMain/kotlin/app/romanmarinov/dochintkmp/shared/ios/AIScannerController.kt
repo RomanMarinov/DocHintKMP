@@ -1,6 +1,6 @@
 package app.romanmarinov.dochintkmp.shared.ios
 
-import app.romanmarinov.dochintkmp.domain.model.MedicalData
+import app.romanmarinov.dochintkmp.domain.model.HousingPaymentDocument
 import app.romanmarinov.dochintkmp.domain.repository.ResultsRepository
 import app.romanmarinov.dochintkmp.domain.usecase.AddResultUseCase
 import app.romanmarinov.dochintkmp.domain.usecase.CheckDuplicateUseCase
@@ -18,7 +18,7 @@ class AIScannerController : KoinComponent {
 
     fun checkDuplicate(cleanText: String): Boolean = checkDuplicateUseCase(cleanText)
 
-    fun saveDocument(data: MedicalData, processedText: String) {
+    fun saveDocument(data: HousingPaymentDocument, processedText: String) {
         addResultUseCase(data, processedText, ResultsRepository.SOURCE_AI)
     }
 }
