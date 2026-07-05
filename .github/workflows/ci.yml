@@ -52,12 +52,11 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # Симулятор и версия iOS на раннере GitHub отличаются от локальной машины;
-      # при падении job замени destination на доступный из: xcodebuild -scheme iosApp -showdestinations
+      # iPhone 16 + OS=latest не существует (16 только на iOS 18.x). На macos-latest — iPhone 17.
       - name: Xcode test (iosAppTests)
         working-directory: iosApp
         run: |
           xcodebuild test \
             -scheme iosApp \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
             -only-testing:iosAppTests
