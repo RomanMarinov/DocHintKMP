@@ -25,7 +25,7 @@
 - **Оффлайн** — pdfbox и локальный OCR и rule-based парсер без интернета (офлайн-распознавание текста на Android; на iOS — **Vision** и **PDFKit**)
 - **Документы** — список сохранённых квитанций, импорт по коду, шаринг
 - **Настройки** — хранение API-ключа OpenRouter
-  
+
 ## Архитектура модулей
 
 | Модуль | Назначение |
@@ -100,3 +100,38 @@ API-ключ OpenRouter задаётся в **Настройках** и хран
 
 ```bash
 ./gradlew :androidApp:testDebugUnitTest
+```
+
+## CI/CD
+
+В репозитории настроен **GitHub Actions** — workflow `.github/workflows/ci.yml`.
+
+### Триггеры запуска
+
+Workflow запускается автоматически при:
+- **Push** в ветки: `main`, `master`, `dev`
+- **Pull Request** в ветки: `main`, `master`, `dev`
+
+### Что проверяется
+
+| Платформа | Runner | Задачи |
+|-----------|--------|--------|
+| **Android** | `ubuntu-latest` | Сборка debug APK (`:androidApp:assembleDebug`), запуск unit-тестов (`:androidApp:testDebugUnitTest`) |
+| **iOS** | `macos-latest` | Запуск Swift-тестов (`xcodebuild test`) для таргета `iosAppTests` на симуляторе `iPhone 17` |
+
+### Статус сборки
+
+[![CI](https://github.com/your-username/doc-hint/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/doc-hint/actions/workflows/ci.yml)
+
+### Локальный запуск CI-команд
+
+```bash
+# Android сборка и тесты
+./gradlew :androidApp:assembleDebug
+./gradlew :androidApp:testDebugUnitTest
+
+# iOS тесты (на macOS)
+xcodebuild test -workspace iosApp/iosApp.xcworkspace \
+  -scheme iosAppTests \
+  -destination 'platform=iOS Simulator,name=iPhone 17'
+```
