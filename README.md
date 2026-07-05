@@ -84,3 +84,19 @@ API-ключ OpenRouter задаётся в **Настройках** и хран
 
 - **Android** — базовый URL в `ShareNetworkConfig.android.kt` (для локальной разработки можно заменить на `http://<LAN-IP>:8081`).
 - **iOS** — переменная окружения `DOCHINT_SHARE_BASE_URL` (в Xcode Scheme → Run → Environment Variables); на симуляторе backend обычно доступен как `http://localhost:8081` на Mac.
+
+## Unit-тесты
+
+В проекте настроены unit-тесты на KMP, Android и iOS:
+
+- `HousingBillParserTest` — rule-based разбор квитанций
+- `TextCleanerHousingTest` — очистка и префильтр ЖКУ-текста
+- `OpenRouterClientTest` — клиент OpenRouter (mock HTTP)
+- `UseCasesTest` — доменные use cases
+- `OcrAiScannerViewModelTest` / `OcrOfflineScannerViewModelTest` — Android ViewModel
+- `AIScannerViewModelTests` / `OfflineScannerViewModelTests` — iOS (Swift)
+
+Локальный запуск Android-тестов:
+
+```bash
+./gradlew :androidApp:testDebugUnitTest
