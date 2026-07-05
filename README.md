@@ -22,19 +22,10 @@
 Приложение поддерживает 4 основных экрана:
 
 - **AI Сканер** — OCR + разбор через LLM (OpenRouter, `gpt-4o-mini`)
-- **Оффлайн** — pdfbox и локальный OCR и rule-based парсер без интернета
+- **Оффлайн** — pdfbox и локальный OCR и rule-based парсер без интернета (офлайн-распознавание текста на Android; на iOS — **Vision** и **PDFKit**)
 - **Документы** — список сохранённых квитанций, импорт по коду, шаринг
 - **Настройки** — хранение API-ключа OpenRouter
-
-### Ключевые технологии (кроме бейджей выше)
-
-- **Compose Multiplatform** — UI на Android (`:composeApp`); на iOS — **SwiftUI** + общий KMP-модуль `:shared`.
-- **Clean Architecture** — модули `:domain`, `:data`, `:shared`, `:composeApp`, `:androidApp`, `:iosApp`.
-- **SQLDelight** — локальное хранилище распознанных квитанций (`HousingResult`).
-- **Paddle OCR (ONNX Runtime)** — офлайн-распознавание текста на Android; на iOS — **Vision** и **PDFKit**.
-- **HousingBillParser** — rule-based парсер полей квитанции (УК, ЛС, услуги, суммы).
-- **Ktor Client** — HTTP к OpenRouter и к backend-шарингу документов.
-
+  
 ## Архитектура модулей
 
 | Модуль | Назначение |
@@ -75,18 +66,12 @@ API-ключ OpenRouter задаётся в **Настройках** и хран
 | `payload` | JSON профиля квитанции (`HousingPaymentDocument`) |
 | `createdAt` | метка времени сохранения |
 
-Вкладки на экране **Документы**:
-- **Мои** — локально сохранённые квитанции
-- **Полученные** — импортированные по коду с backend
-
 ## Шаринг документов (share API)
 
 Выбранные квитанции отправляются на backend:
 
 - `POST /share` — создать одноразовый код
 - `GET /share/{code}` — получить пакет документов
-
-Формат обмена — `ShareEnvelope` с `messageType: housing_document_export` и `kind: housing_bill`.
 
 ## Конфигурация
 
@@ -99,10 +84,3 @@ API-ключ OpenRouter задаётся в **Настройках** и хран
 
 - **Android** — базовый URL в `ShareNetworkConfig.android.kt` (для локальной разработки можно заменить на `http://<LAN-IP>:8081`).
 - **iOS** — переменная окружения `DOCHINT_SHARE_BASE_URL` (в Xcode Scheme → Run → Environment Variables); на симуляторе backend обычно доступен как `http://localhost:8081` на Mac.
-
-### Запуск локально
-
-#### Android
-
-```bash
-./gradlew :androidApp:assembleDebug
