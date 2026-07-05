@@ -4,7 +4,7 @@ import Shared
 // MARK: - Result Card
 
 struct DocumentsResultCard: View {
-    let data: DomainMedicalData
+    let data: HousingPaymentDocument
     var selectionMode: Bool = false
     var selected: Bool = false
     let onToggleSelect: () -> Void
@@ -14,8 +14,6 @@ struct DocumentsResultCard: View {
     @State private var expanded = false
 
     var body: some View {
-        let housingBill = HousingBillDisplay.shared.parse(data: data)
-
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 8) {
                 if selectionMode {
@@ -37,7 +35,7 @@ struct DocumentsResultCard: View {
                         onToggleSelect()
                     }
                 } label: {
-                    DocumentsCardCollapsedSummary(data: data, housingBill: housingBill)
+                    DocumentsCardCollapsedSummary(data: data)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .buttonStyle(.plain)
@@ -74,11 +72,7 @@ struct DocumentsResultCard: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Divider()
                         .padding(.top, 18)
-                    if let housingBill {
-                        DocumentsHousingBillContent(data: housingBill)
-                    } else {
-                        DocumentsMedicalExpandedBody(data: data, strings: strings)
-                    }
+                    DocumentsHousingBillContent(data: data)
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
@@ -94,8 +88,7 @@ struct DocumentsResultCard: View {
 // MARK: - Collapsed Summary
 
 private struct DocumentsCardCollapsedSummary: View {
-    let data: DomainMedicalData
-    let housingBill: DomainHousingPaymentDocument?
+    let data: HousingPaymentDocument
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
@@ -105,71 +98,48 @@ private struct DocumentsCardCollapsedSummary: View {
                 .padding(.top, 2)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(data.documentType ?? "Анализ")
+                Text(data.documentType)
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
 
-                if let housingBill {
-                    let subtitle = housingCollapsedSubtitle(housingBill)
-                    if !subtitle.isEmpty {
-                        Text(subtitle)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundStyle(Color.accentColor)
-                    }
-                    if let detail = housingCollapsedDetail(housingBill) {
-                        Text(detail)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-                    }
-                } else {
-                    if let date = data.analysisDate {
-                        Text(date)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    let detail = medicalCollapsedDetail(data)
-                    if !detail.isEmpty {
-                        Text(detail)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-                    }
+                let subtitle = housingCollapsedSubtitle(data)
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color.accentColor)
+                }
+                if let detail = housingCollapsedDetail(data) {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
             }
         }
     }
 
-    private func housingCollapsedSubtitle(_ bill: DomainHousingPaymentDocument) -> String {
+    private func housingCollapsedSubtitle(_ bill: HousingPaymentDocument) -> String {
         var parts: [String] = []
         if let date = bill.documentDate, !date.isEmpty { parts.append(date) }
         if let amount = bill.amountDueForPeriod, !amount.isEmpty { parts.append("\(amount) ₽") }
         return parts.joined(separator: " · ")
     }
 
-    private func housingCollapsedDetail(_ bill: DomainHousingPaymentDocument) -> String? {
+    private func housingCollapsedDetail(_ bill: HousingPaymentDocument) -> String? {
         if let inst = bill.institution, !inst.isEmpty { return inst }
         if let address = bill.propertyAddress, !address.isEmpty { return address }
         return nil
     }
 
-    private func medicalCollapsedDetail(_ data: DomainMedicalData) -> String {
-        var parts: [String] = []
-        if let inst = data.institution, !inst.isEmpty { parts.append(inst) }
-        if let count = data.indicators?.count, count > 0 {
-            parts.append("\(count) показат.")
-        }
-        return parts.joined(separator: " · ")
-    }
 }
 
 // MARK: - Housing Bill Content
 
 struct DocumentsHousingBillContent: View {
-    let data: DomainHousingPaymentDocument
+    let data: HousingPaymentDocument
     private let strings = OfflineScannerStrings()
 
     var body: some View {
@@ -298,35 +268,6 @@ private struct DocumentsHousingTextRow: View {
     }
 }
 
-private struct DocumentsMedicalExpandedBody: View {
-    let data: DomainMedicalData
-    let strings: DocumentsStrings
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let inst = data.institution {
-                DocumentsPlainMetaRow(title: strings.labelInstitution, value: inst)
-            }
-            if let doc = data.doctorName {
-                DocumentsPlainMetaRow(title: strings.labelDoctor, value: doc)
-            }
-
-            if let indicators = data.indicators, !indicators.isEmpty {
-                Text(strings.indicatorsFormat(Int32(indicators.count)))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                VStack(spacing: 4) {
-                    ForEach(Array(indicators.enumerated()), id: \.offset) { _, ind in
-                        DocumentsIndicatorRow(indicator: ind)
-                    }
-                }
-                .padding(12)
-                .background(Color(.secondarySystemBackground).opacity(0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-        }
-    }
-}
 
 private struct DocumentsPlainMetaRow: View {
     let title: String
@@ -404,7 +345,7 @@ private struct DocumentsHousingStatChips: View {
 }
 
 private struct DocumentsHousingServiceRow: View {
-    let line: DomainHousingServiceLine
+    let line: HousingServiceLine
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -454,30 +395,4 @@ struct DocumentsMetaRow: View {
     }
 }
 
-struct DocumentsIndicatorRow: View {
-    let indicator: DomainAnalysisIndicator
-
-    var body: some View {
-        HStack(alignment: .top) {
-            Text(displayLabel)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Text(indicator.value)
-                .fontWeight(.medium)
-            if let ref = indicator.referenceRange {
-                Text(ref)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-        }
-        .font(.subheadline)
-    }
-
-    private var displayLabel: String {
-        let prefix = "__meta__:"
-        if indicator.name.hasPrefix(prefix) {
-            return String(indicator.name.dropFirst(prefix.count))
-        }
-        return indicator.name
-    }
-}
+// Removed DocumentsIndicatorRow (medical "indicator" UI not used for housing documents)

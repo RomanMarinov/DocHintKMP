@@ -12,7 +12,7 @@ enum OfflineScanProcessError: Equatable {
 }
 
 struct OfflineScanProcessResult {
-    var data: DomainHousingPaymentDocument?
+    var data: HousingPaymentDocument?
     var processedText: String?
     var error: OfflineScanProcessError?
 }
@@ -38,7 +38,7 @@ final class DefaultOfflineScannerTextExtractor: OfflineScannerTextExtracting {
 /// Parse, duplicate check, save — mirrors KMP [OfflineScannerController] for production; fakes for tests.
 protocol OfflineScanningBackend: AnyObject {
     func processText(rawText: String) -> OfflineScanProcessResult
-    func saveDocument(data: DomainHousingPaymentDocument, processedText: String)
+    func saveDocument(data: HousingPaymentDocument, processedText: String)
 }
 
 final class KotlinOfflineScanningBackend: OfflineScanningBackend {
@@ -59,7 +59,7 @@ final class KotlinOfflineScanningBackend: OfflineScanningBackend {
         return OfflineScanProcessResult(data: nil, processedText: nil, error: .unknown)
     }
 
-    func saveDocument(data: DomainHousingPaymentDocument, processedText: String) {
+    func saveDocument(data: HousingPaymentDocument, processedText: String) {
         controller.saveDocument(data: data, processedText: processedText)
     }
 

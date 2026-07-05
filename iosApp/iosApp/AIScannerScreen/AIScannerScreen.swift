@@ -4,6 +4,7 @@ import SwiftUI
 struct AIScannerScreen: View {
     @StateObject private var viewModel = AIScannerViewModel()
     @State private var showFilePicker = false
+    @State private var showPdfViewer = false
     private let strings = AIScannerStrings()
 
     var body: some View {
@@ -21,6 +22,11 @@ struct AIScannerScreen: View {
             allowsMultipleSelection: false
         ) { result in
             viewModel.handleFilePick(result: result)
+        }
+        .sheet(isPresented: $showPdfViewer) {
+            if let url = viewModel.selectedURL {
+                PDFViewer(url: url)
+            }
         }
         .overlay(alignment: .bottom) { toastOverlay }
     }
@@ -119,8 +125,29 @@ struct AIScannerScreen: View {
                     .frame(height: 220)
                     .clipped()
                     .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if viewModel.selectedURL?.pathExtension.lowercased() == "pdf" {
+                            showPdfViewer = true
+                        }
+                    }
             }
             CloseButton(action: { viewModel.resetState() })
+            if viewModel.selectedURL?.pathExtension.lowercased() == "pdf" {
+                Button(action: { showPdfViewer = true }) {
+                    Text(strings.openPdf)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Color.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .padding(12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            }
         }
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))

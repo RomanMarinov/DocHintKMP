@@ -11,7 +11,7 @@ enum DocumentsTab: Hashable {
 @MainActor
 final class DocumentsViewModel: ObservableObject {
 
-    @Published var results: [DomainMedicalData] = []
+    @Published var results: [HousingPaymentDocument] = []
     @Published var deleteIndex: Int?
     @Published var showClearDialog = false
     @Published var selectionMode = false
@@ -32,19 +32,19 @@ final class DocumentsViewModel: ObservableObject {
         strings.resultsCountText(currentItems.count)
     }
 
-    var ownItems: [DomainMedicalData] {
+    var ownItems: [HousingPaymentDocument] {
         results.filter { ($0.source ?? "") != sourceShared }
     }
 
-    var receivedItems: [DomainMedicalData] {
+    var receivedItems: [HousingPaymentDocument] {
         results.filter { ($0.source ?? "") == sourceShared }
     }
 
-    var currentItems: [DomainMedicalData] {
+    var currentItems: [HousingPaymentDocument] {
         selectedTab == .mine ? ownItems : receivedItems
     }
 
-    var selectedOwnItems: [DomainMedicalData] {
+    var selectedOwnItems: [HousingPaymentDocument] {
         let own = ownItems
         return selectedIndices.compactMap { idx in
             own.indices.contains(idx) ? own[idx] : nil

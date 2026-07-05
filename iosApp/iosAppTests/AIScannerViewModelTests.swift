@@ -61,12 +61,27 @@ final class AIScannerViewModelTests: XCTestCase {
 
     func testProcessImage_success_thenSave_callsDomainSave() async {
         let strings = AIScannerStrings()
-        let parsed = AIMedicalData(
-            documentType: "ОАК",
+        let parsed = HousingPaymentDocument(
+            documentType: "Квитанция ЖКХ",
             institution: nil,
-            doctorName: nil,
-            analysisDate: nil,
-            indicators: []
+            documentDate: nil,
+            source: nil,
+            category: .main,
+            documentNumber: nil,
+            paymentDocumentId: nil,
+            personalAccountNumber: nil,
+            unifiedPersonalAccount: nil,
+            housingUtilitiesId: nil,
+            propertyAddress: nil,
+            payerName: nil,
+            totalAreaSqm: nil,
+            livingAreaSqm: nil,
+            residentsCount: nil,
+            amountDueForPeriod: "100",
+            amountPaid: nil,
+            lastPaymentDate: nil,
+            debtFromPreviousPeriods: nil,
+            serviceLines: [HousingServiceLine(name: "Отопление", group: .utilities, unit: nil, volume: nil, volumeBasis: nil, tariff: nil, amountToPay: "100")]
         )
         let llm = FakeLlm(result: parsed)
         let domain = FakeAiDomain(duplicate: false)
@@ -126,23 +141,45 @@ private final class FakeKeychain: AIScannerKeychainReading {
 }
 
 private final class FakeLlm: AIScannerLlmClient {
-    var result: AIMedicalData?
+    var result: HousingPaymentDocument?
     var error: Error?
 
-    init(result: AIMedicalData? = nil, throwing: Error? = nil) {
+    init(result: HousingPaymentDocument? = nil, throwing: Error? = nil) {
         self.result = result
         self.error = throwing
     }
 
-    func parseWithLlm(apiKey: String, cleanText: String) async throws -> AIMedicalData {
+    func parseWithLlm(apiKey: String, cleanText: String) async throws -> HousingPaymentDocument {
         if let error { throw error }
-        return result ?? AIMedicalData(documentType: "X", institution: nil, doctorName: nil, analysisDate: nil, indicators: [])
+        return result ?? HousingPaymentDocument(
+            documentType: "X",
+            institution: nil,
+            documentDate: nil,
+            source: nil,
+            category: .main,
+            documentNumber: nil,
+            paymentDocumentId: nil,
+            personalAccountNumber: nil,
+            unifiedPersonalAccount: nil,
+            housingUtilitiesId: nil,
+            propertyAddress: nil,
+            payerName: nil,
+            totalAreaSqm: nil,
+            livingAreaSqm: nil,
+            residentsCount: nil,
+            amountDueForPeriod: "0",
+            amountPaid: nil,
+            lastPaymentDate: nil,
+            debtFromPreviousPeriods: nil,
+            serviceLines: [HousingServiceLine(name: "Услуга", group: .utilities, unit: nil, volume: nil, volumeBasis: nil, tariff: nil, amountToPay: "0")]
+        )
     }
 }
 
 private final class FakeAiDomain: AIScannerDomainBackend {
     var duplicate: Bool
     var saveCallCount = 0
+    var lastSavedData: HousingPaymentDocument?
     var lastProcessedText: String?
 
     init(duplicate: Bool = false) {
@@ -151,22 +188,27 @@ private final class FakeAiDomain: AIScannerDomainBackend {
 
     func checkDuplicate(cleanText: String) -> Bool { duplicate }
 
-    func saveDocument(data: DomainMedicalData, processedText: String) {
+    func saveDocument(data: HousingPaymentDocument, processedText: String) {
         saveCallCount += 1
+        lastSavedData = data
         lastProcessedText = processedText
     }
 }
 
 private final class FakeAiOcr: AIScannerOcrProviding {
-    var imageText: String
-    var pdfText: String?
+    let imageText: String
+    let pdfText: String?
 
     init(imageText: String = "", pdfText: String? = nil) {
         self.imageText = imageText
         self.pdfText = pdfText
     }
 
-    func extractPdfText(from url: URL) async -> String? { pdfText }
+    func extractPdfText(from url: URL) async -> String? {
+        pdfText
+    }
 
-    func extractText(from image: UIImage) throws -> String { imageText }
+    func extractText(from image: UIImage) throws -> String {
+        imageText
+    }
 }

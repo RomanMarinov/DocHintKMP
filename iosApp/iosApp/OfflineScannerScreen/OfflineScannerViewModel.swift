@@ -98,7 +98,7 @@ final class OfflineScannerViewModel: ObservableObject {
         }
     }
 
-    func saveDocument(data: DomainHousingPaymentDocument, processedText: String) {
+    func saveDocument(data: HousingPaymentDocument, processedText: String) {
         scanning.saveDocument(data: data, processedText: processedText)
         toastMessage = strings.toastAddedToDocuments
         resetState()

@@ -43,7 +43,7 @@ struct AIPipelineStep: View {
 
 // MARK: - Expandable Success Card (matches Android AiSuccessCard)
 struct AIExpandableResultCard: View {
-    let data: AIMedicalData
+    let data: HousingPaymentDocument
     @State private var expanded = false
     private let strings = AIScannerStrings()
 
@@ -85,12 +85,11 @@ struct AIExpandableResultCard: View {
 }
 
 private struct AIExpandedContent: View {
-    let data: AIMedicalData
+    let data: HousingPaymentDocument
     private let strings = AIScannerStrings()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Document type row
             HStack {
                 Text(strings.labelDocumentType)
                     .font(.subheadline)
@@ -113,40 +112,45 @@ private struct AIExpandedContent: View {
             if let inst = data.institution {
                 AIDataField(label: strings.labelInstitution, value: inst)
             }
-            
-            let isHousingBill = data.documentType?.contains("квитанция", ignoreCase = true) == true ||
-                                data.documentType?.contains("жку", ignoreCase: true) == true ||
-                                data.documentType?.contains("жкх", ignoreCase: true) == true
-            
-            if let doc = data.doctorName {
-                let doctorLabel = isHousingBill ? strings.labelPayer : strings.labelDoctor
-                AIDataField(label: doctorLabel, value: doc)
+            if let payer = data.payerName {
+                AIDataField(label: strings.labelPayer, value: payer)
             }
-            if let date = data.analysisDate {
-                let dateLabel = isHousingBill ? strings.labelBillingPeriod : strings.labelAnalysisDate
-                AIDataField(label: dateLabel, value: date)
+            if let billingPeriod = data.documentDate {
+                AIDataField(label: strings.labelBillingPeriod, value: billingPeriod)
+            }
+            if let address = data.propertyAddress {
+                AIDataField(label: strings.labelPropertyAddress, value: address)
+            }
+            if let amountDue = data.amountDueForPeriod {
+                AIDataField(label: strings.labelAmountDue, value: amountDue)
+            }
+            if let account = data.personalAccountNumber {
+                AIDataField(label: strings.labelPersonalAccount, value: account)
             }
 
-            if !data.indicators.isEmpty {
+            if let services = data.serviceLines, !services.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(String(format: String(localized: "offline_indicators_count"), data.indicators.count))
+                    Text(strings.servicesCount(services.count))
                         .font(.caption)
                         .foregroundStyle(Color(.secondaryLabel))
                     VStack(spacing: 4) {
-                        ForEach(Array(data.indicators.enumerated()), id: \.offset) { _, ind in
+                        ForEach(services.indices, id: \.self) { index in
+                            let line = services[index]
                             HStack(alignment: .top) {
-                                Text(ind.name)
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color(.secondaryLabel))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                Text(ind.value)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(line.name)
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color(.secondaryLabel))
+                                    if let tariff = line.tariff {
+                                        Text(strings.tariffValue(tariff))
+                                            .font(.caption2)
+                                            .foregroundStyle(Color(.tertiaryLabel))
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                Text(line.amountToPay)
                                     .font(.subheadline)
                                     .fontWeight(.medium)
-                                if let ref = ind.referenceRange {
-                                    Text(ref)
-                                        .font(.caption2)
-                                        .foregroundStyle(Color(.tertiaryLabel))
-                                }
                             }
                         }
                     }

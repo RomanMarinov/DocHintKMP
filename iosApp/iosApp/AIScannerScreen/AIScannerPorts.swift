@@ -10,7 +10,7 @@ protocol AIScannerKeychainReading: AnyObject {
 extension KeychainStorage: AIScannerKeychainReading {}
 
 protocol AIScannerLlmClient: AnyObject {
-    func parseWithLlm(apiKey: String, cleanText: String) async throws -> AIMedicalData
+    func parseWithLlm(apiKey: String, cleanText: String) async throws -> HousingPaymentDocument
 }
 
 extension OpenRouterService: AIScannerLlmClient {}
@@ -18,7 +18,7 @@ extension OpenRouterService: AIScannerLlmClient {}
 /// Duplicate check + save via KMP [AIScannerController].
 protocol AIScannerDomainBackend: AnyObject {
     func checkDuplicate(cleanText: String) -> Bool
-    func saveDocument(data: DomainMedicalData, processedText: String)
+    func saveDocument(data: HousingPaymentDocument, processedText: String)
 }
 
 final class KotlinAIScannerDomainBackend: AIScannerDomainBackend {
@@ -32,7 +32,7 @@ final class KotlinAIScannerDomainBackend: AIScannerDomainBackend {
         controller.checkDuplicate(cleanText: cleanText)
     }
 
-    func saveDocument(data: DomainMedicalData, processedText: String) {
+    func saveDocument(data: HousingPaymentDocument, processedText: String) {
         controller.saveDocument(data: data, processedText: processedText)
     }
 }

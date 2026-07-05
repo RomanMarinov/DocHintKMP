@@ -28,4 +28,10 @@ struct AIScannerStrings {
     var labelAnalysisDate: String { String(localized: "label_analysis_date") }
     var labelPayer: String { String(localized: "label_payer") }
     var labelBillingPeriod: String { String(localized: "label_billing_period") }
+    var labelPersonalAccount: String { String(localized: "label_personal_account") }
+    var labelPropertyAddress: String { String(localized: "label_property_address") }
+    var labelAmountDue: String { String(localized: "label_amount_due") }
+    var openPdf: String { String(localized: "button_open_pdf", defaultValue: "Open PDF") }
+    func servicesCount(_ n: Int) -> String { String(format: String(localized: "services_count"), n) }
+    func tariffValue(_ value: String) -> String { String(format: String(localized: "tariff_value_format"), value) }
 }

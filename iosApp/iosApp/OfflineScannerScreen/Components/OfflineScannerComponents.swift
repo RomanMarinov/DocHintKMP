@@ -103,7 +103,7 @@ struct OfflineErrorCard: View {
 // MARK: - Expandable Result Card (matches Android OfflineSuccessCard)
 
 struct ExpandableResultCard: View {
-    let data: DomainHousingPaymentDocument
+    let data: HousingPaymentDocument
     @State private var expanded = true
     private let strings = OfflineScannerStrings()
 
@@ -145,7 +145,7 @@ struct ExpandableResultCard: View {
 }
 
 private struct OfflineExpandedContent: View {
-    let data: DomainHousingPaymentDocument
+    let data: HousingPaymentDocument
     private let strings = OfflineScannerStrings()
 
     var body: some View {

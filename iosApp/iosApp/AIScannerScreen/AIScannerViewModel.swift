@@ -24,7 +24,7 @@ final class AIScannerViewModel: ObservableObject {
     enum AIContentState {
         case idle
         case loading
-        case success(AIMedicalData, processedText: String)
+        case success(HousingPaymentDocument, processedText: String)
         case error(String)
     }
 
@@ -120,7 +120,7 @@ final class AIScannerViewModel: ObservableObject {
         } catch let e as OpenRouterService.AIError {
             switch e {
             case .invalidKey: contentState = .error(strings.errorSaveKey)
-            case .noMedicalData: contentState = .error(e.localizedDescription)
+            case .noHousingBillData: contentState = .error(e.localizedDescription)
             case .apiError(let m): contentState = .error(m)
             default: contentState = .error(e.localizedDescription)
             }
@@ -137,28 +137,9 @@ final class AIScannerViewModel: ObservableObject {
 
     func saveDocument() {
         guard case let .success(data, processedText) = contentState else { return }
-        let domainData = toDomainMedicalData(data)
-        domain.saveDocument(data: domainData, processedText: processedText)
+        domain.saveDocument(data: data, processedText: processedText)
         showToast(strings.toastAddedToDocuments)
         resetState()
-    }
-
-    private func toDomainMedicalData(_ d: AIMedicalData) -> DomainMedicalData {
-        let indicators = d.indicators.map { ind in
-            DomainAnalysisIndicator(
-                name: ind.name,
-                value: ind.value,
-                referenceRange: ind.referenceRange
-            )
-        }
-        return DomainMedicalData(
-            documentType: d.documentType,
-            institution: d.institution,
-            doctorName: d.doctorName,
-            analysisDate: d.analysisDate,
-            indicators: indicators,
-            source: nil
-        )
     }
 
     private func showToast(_ msg: String) {

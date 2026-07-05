@@ -6,16 +6,23 @@ final class OpenRouterService {
     private let model = "gpt-4o-mini"
 
     private let systemPrompt = """
-    Ты — парсер медицинских анализов крови. КРИТИЧНО: для ОАК в таблице есть строки «Эозинофилы, %», «Эозинофилы, абс.», «Базофилы, %», «Базофилы, абс.» — это 4 РАЗНЫХ показателя, извлеки все 4. Верни ТОЛЬКО JSON.
-    Поддерживаемые типы: "ОАК" (общий анализ крови) и "Биохимический анализ крови".
-    Определи тип по ключевым словам:
-    - ОАК: "общий анализ крови", "ОАК", "клинический анализ крови"
-    - Биохимия: "биохимия", "биохимический", "БАК"
+    Ты — парсер квитанций за коммунальные услуги (ЖКХ). Извлекай структурированные данные в JSON.
+    Поддерживаемые типы: "Квитанция ЖКХ" и "Квитанция ЖКХ (капремонт)".
+    Определи тип документа по ключевым словам:
+    - ЖКХ: содержит услуги (отопление, водоснабжение, электричество, газоснабжение, водоотведение), управляющую компанию, плательщика, лицевой счёт, адрес.
 
     Формат ответа:
-    {"document_type":"ОАК"|"Биохимический анализ крови"|null,"institution":string|null,"doctor_name":string|null,"analysis_date":string|null,"indicators":[{"name":string,"value":string,"reference_range":string|null}]}
+    {"document_type":"Квитанция ЖКХ"|"Квитанция ЖКХ (капремонт)","institution":string|null,"document_date":string|null,"category":"MAIN"|"CAPITAL_REPAIR"|null,"document_number":string|null,"payment_document_id":string|null,"personal_account_number":string|null,"unified_personal_account":string|null,"housing_utilities_id":string|null,"property_address":string|null,"payer_name":string|null,"total_area_sqm":string|null,"living_area_sqm":string|null,"residents_count":string|null,"amount_due_for_period":string|null,"amount_paid":string|null,"last_payment_date":string|null,"debt_from_previous_periods":string|null,"service_lines":[{"name":string,"group":"MAINTENANCE"|"COMMON_PROPERTY_ODN"|"UTILITIES"|"ADDITIONAL"|"CAPITAL_REPAIR","unit":string|null,"volume":string|null,"volume_basis":"METER"|"NORM"|"OTHER"|null,"tariff":string|null,"amount_to_pay":string}]}"
 
-    Показатели для ОАК и Биохимии — извлекай каждый показатель из документа. Без markdown, без объяснений, ТОЛЬКО JSON
+    ПРАВИЛА ЗАПОЛНЕНИЯ:
+    - Используй ТОЛЬКО поля схемы выше. НЕ возвращай indicators, doctor_name, analysis_date.
+    - document_type: "Квитанция ЖКХ" или "Квитанция ЖКХ (капремонт)".
+    - institution: управляющая компания/исполнитель (УК, ТСЖ, ЕРЦ и т.п.). Сохраняй полное название, не сокращай до "ООО УК".
+    - document_date: период платежа (ГГГГ-ММ или ММ.ГГГГ).
+    - category: MAIN или CAPITAL_REPAIR.
+    - service_lines обязательно непустой массив.
+    - Если поля нет — верни null или опусти его.
+    - В ответе только JSON, без markdown, без объяснений, без лишних полей.
     """
 
     struct ParseResponse: Decodable {
@@ -37,30 +44,64 @@ final class OpenRouterService {
     }
     struct ApiError: Decodable { let message: String? }
 
-    struct MedicalDataDto: Decodable {
+    struct HousingPaymentDocumentDto: Decodable {
         let documentType: String?
         let institution: String?
-        let doctorName: String?
-        let analysisDate: String?
-        let indicators: [IndicatorDto]?
+        let documentDate: String?
+        let category: String?
+        let documentNumber: String?
+        let paymentDocumentId: String?
+        let personalAccountNumber: String?
+        let unifiedPersonalAccount: String?
+        let housingUtilitiesId: String?
+        let propertyAddress: String?
+        let payerName: String?
+        let totalAreaSqm: String?
+        let livingAreaSqm: String?
+        let residentsCount: String?
+        let amountDueForPeriod: String?
+        let amountPaid: String?
+        let lastPaymentDate: String?
+        let debtFromPreviousPeriods: String?
+        let serviceLines: [HousingServiceLineDto]?
         enum CodingKeys: String, CodingKey {
             case documentType = "document_type"
-            case institution, doctorName = "doctor_name"
-            case analysisDate = "analysis_date"
-            case indicators
+            case institution
+            case documentDate = "document_date"
+            case category
+            case documentNumber = "document_number"
+            case paymentDocumentId = "payment_document_id"
+            case personalAccountNumber = "personal_account_number"
+            case unifiedPersonalAccount = "unified_personal_account"
+            case housingUtilitiesId = "housing_utilities_id"
+            case propertyAddress = "property_address"
+            case payerName = "payer_name"
+            case totalAreaSqm = "total_area_sqm"
+            case livingAreaSqm = "living_area_sqm"
+            case residentsCount = "residents_count"
+            case amountDueForPeriod = "amount_due_for_period"
+            case amountPaid = "amount_paid"
+            case lastPaymentDate = "last_payment_date"
+            case debtFromPreviousPeriods = "debt_from_previous_periods"
+            case serviceLines = "service_lines"
         }
     }
-    struct IndicatorDto: Decodable {
+    struct HousingServiceLineDto: Decodable {
         let name: String?
-        let value: String?
-        let referenceRange: String?
+        let group: String?
+        let unit: String?
+        let volume: String?
+        let volumeBasis: String?
+        let tariff: String?
+        let amountToPay: String?
         enum CodingKeys: String, CodingKey {
-            case name, value
-            case referenceRange = "reference_range"
+            case name, group, unit, volume, tariff
+            case volumeBasis = "volume_basis"
+            case amountToPay = "amount_to_pay"
         }
     }
 
-    func parseWithLlm(apiKey: String, cleanText: String) async throws -> AIMedicalData {
+    func parseWithLlm(apiKey: String, cleanText: String) async throws -> HousingPaymentDocument {
         let authHeader = apiKey.hasPrefix("Bearer ") ? apiKey : "Bearer \(apiKey)"
         let url = URL(string: "\(baseURL)api/v1/chat/completions")!
         var request = URLRequest(url: url)
@@ -93,27 +134,36 @@ final class OpenRouterService {
         }
 
         let json = extractJson(from: content)
-        let dto = try JSONDecoder().decode(MedicalDataDto.self, from: json.data(using: .utf8)!)
-
-        let docType = normalizeDocumentType(dto.documentType)
-        let indicators = (dto.indicators ?? [])
-            .filter { !($0.name ?? "").isEmpty && !($0.value ?? "").isEmpty }
-            .map { AIMedicalIndicator(
-                name: $0.name ?? "",
-                value: $0.value ?? "",
-                referenceRange: $0.referenceRange
-            ) }
-
-        if docType?.isEmpty != false && indicators.isEmpty {
-            throw AIError.noMedicalData
+        let dto = try JSONDecoder().decode(HousingPaymentDocumentDto.self, from: json.data(using: .utf8)!)
+        let serviceLines = (dto.serviceLines ?? []).compactMap { toHousingServiceLine($0) }
+        if serviceLines.isEmpty {
+            throw AIError.noHousingBillData
         }
 
-        return AIMedicalData(
-            documentType: docType ?? "Анализ",
+        let category = normalizeCategory(dto.category)
+        let documentType = normalizeDocumentType(dto.documentType, category: category)
+
+        return HousingPaymentDocument(
+            documentType: documentType,
             institution: dto.institution,
-            doctorName: dto.doctorName,
-            analysisDate: dto.analysisDate,
-            indicators: indicators
+            documentDate: dto.documentDate,
+            source: nil,
+            category: category,
+            documentNumber: dto.documentNumber,
+            paymentDocumentId: dto.paymentDocumentId,
+            personalAccountNumber: dto.personalAccountNumber,
+            unifiedPersonalAccount: dto.unifiedPersonalAccount,
+            housingUtilitiesId: dto.housingUtilitiesId,
+            propertyAddress: dto.propertyAddress,
+            payerName: dto.payerName,
+            totalAreaSqm: dto.totalAreaSqm,
+            livingAreaSqm: dto.livingAreaSqm,
+            residentsCount: dto.residentsCount,
+            amountDueForPeriod: dto.amountDueForPeriod,
+            amountPaid: dto.amountPaid,
+            lastPaymentDate: dto.lastPaymentDate,
+            debtFromPreviousPeriods: dto.debtFromPreviousPeriods,
+            serviceLines: serviceLines
         )
     }
 
@@ -129,16 +179,67 @@ final class OpenRouterService {
         return String(s[start...end])
     }
 
-    private func normalizeDocumentType(_ t: String?) -> String? {
-        let lower = (t ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        if lower.isEmpty { return t }
-        if lower == "oak" || lower == "оак" || lower.contains("общий анализ") || lower.contains("клинический") {
-            return "ОАК"
+    private func normalizeDocumentType(_ t: String?, category: HousingBillCategory) -> String {
+        let raw = (t ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if raw.isEmpty {
+            return category == .capitalRepair ? "Квитанция ЖКХ (капремонт)" : "Квитанция ЖКХ"
         }
-        if lower == "bak" || lower == "бак" || lower.contains("биохим") {
-            return "Биохимический анализ крови"
+        return raw
+    }
+
+    private func normalizeCategory(_ raw: String?) -> HousingBillCategory {
+        let value = (raw ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if value.contains("капремонт") || value.contains("капремон") || value.contains("капит") {
+            return .capitalRepair
         }
-        return t
+        return .main
+    }
+
+    private func toHousingServiceLine(_ dto: HousingServiceLineDto) -> HousingServiceLine? {
+        guard let name = dto.name, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let amountToPay = dto.amountToPay, !amountToPay.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let group = normalizeServiceGroup(dto.group) else {
+            return nil
+        }
+
+        return HousingServiceLine(
+            name: name,
+            group: group,
+            unit: dto.unit,
+            volume: dto.volume,
+            volumeBasis: normalizeVolumeBasis(dto.volumeBasis),
+            tariff: dto.tariff,
+            amountToPay: amountToPay
+        )
+    }
+
+    private func normalizeServiceGroup(_ raw: String?) -> HousingServiceGroup? {
+        let lower = (raw ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if lower.contains("содерж") || lower.contains("ремонт") || lower.contains("капрем") {
+            return .maintenance
+        }
+        if lower.contains("одн") || lower.contains("обща") || lower.contains("внеп") {
+            return .commonPropertyOdn
+        }
+        if lower.contains("электр") || lower.contains("газ") || lower.contains("вод") || lower.contains("тепл") || lower.contains("отопл") {
+            return .utilities
+        }
+        if lower.contains("доп") || lower.contains("пени") || lower.contains("штраф") {
+            return .additional
+        }
+        return .utilities
+    }
+
+    private func normalizeVolumeBasis(_ raw: String?) -> HousingVolumeBasis? {
+        let lower = (raw ?? "").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if lower.contains("норм") || lower.contains("норма") {
+            return .norm
+        }
+        if lower.contains("м") || lower.contains("куб") || lower.contains("гкал") {
+            return .meter
+        }
+        if lower.isEmpty { return nil }
+        return .other
     }
 
     enum AIError: LocalizedError {
@@ -146,7 +247,7 @@ final class OpenRouterService {
         case insufficientFunds
         case rateLimit
         case emptyResponse
-        case noMedicalData
+        case noHousingBillData
         case apiError(String)
         case unknown
 
@@ -156,24 +257,10 @@ final class OpenRouterService {
             case .insufficientFunds: return "Недостаточно средств"
             case .rateLimit: return "Слишком много запросов"
             case .emptyResponse: return "Пустой ответ"
-            case .noMedicalData: return "Не удалось распознать данные"
+            case .noHousingBillData: return "Не удалось распознать данные ЖКХ"
             case .apiError(let m): return m
             case .unknown: return "Неизвестная ошибка"
             }
         }
     }
-}
-
-struct AIMedicalData {
-    let documentType: String
-    let institution: String?
-    let doctorName: String?
-    let analysisDate: String?
-    let indicators: [AIMedicalIndicator]
-}
-
-struct AIMedicalIndicator {
-    let name: String
-    let value: String
-    let referenceRange: String?
 }

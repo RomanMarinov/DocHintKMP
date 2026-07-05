@@ -72,7 +72,7 @@ final class OfflineScannerViewModelTests: XCTestCase {
 
     func testProcessFile_success_thenSaveDocument_callsSaveAndResets() async {
         let strings = OfflineScannerStrings()
-        let data = DomainHousingPaymentDocument(
+        let data = HousingPaymentDocument(
             documentType: "Квитанция ЖКУ",
             institution: "ООО УК ФЛАГМАН",
             documentDate: "2026-02",
@@ -143,7 +143,7 @@ private final class FakeOfflineTextExtractor: OfflineScannerTextExtracting {
 private final class FakeOfflineScanning: OfflineScanningBackend {
     var result: OfflineScanProcessResult
     var saveCallCount = 0
-    var lastSavedData: DomainHousingPaymentDocument?
+    var lastSavedData: HousingPaymentDocument?
     var lastSavedText: String?
 
     init(result: OfflineScanProcessResult = OfflineScanProcessResult(data: nil, processedText: nil, error: .unknown)) {
@@ -154,7 +154,7 @@ private final class FakeOfflineScanning: OfflineScanningBackend {
         result
     }
 
-    func saveDocument(data: DomainHousingPaymentDocument, processedText: String) {
+    func saveDocument(data: HousingPaymentDocument, processedText: String) {
         saveCallCount += 1
         lastSavedData = data
         lastSavedText = processedText

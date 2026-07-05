@@ -24,6 +24,7 @@ struct OfflineScannerStrings {
     var labelHousingUtilitiesId: String { String(localized: "label_housing_utilities_id", defaultValue: "ИЖКУ") }
     var labelPaymentDocumentId: String { String(localized: "label_payment_document_id", defaultValue: "ID документа") }
     var labelTotalAreaShort: String { String(localized: "label_total_area_short", defaultValue: "Общая") }
+    var openPdf: String { String(localized: "button_open_pdf", defaultValue: "Open PDF") }
     var labelLivingAreaShort: String { String(localized: "label_living_area_short", defaultValue: "Жилая") }
     var labelResidents: String { String(localized: "label_residents", defaultValue: "Проживающих") }
     func servicesCount(_ n: Int) -> String {

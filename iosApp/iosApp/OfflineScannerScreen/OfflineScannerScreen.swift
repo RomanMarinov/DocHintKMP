@@ -3,6 +3,7 @@ import UniformTypeIdentifiers
 
 struct OfflineScannerScreen: View {
     @StateObject private var viewModel = OfflineScannerViewModel()
+    @State private var showPdfViewer = false
     private let strings = OfflineScannerStrings()
 
     private var topBar: some View {
@@ -36,6 +37,11 @@ struct OfflineScannerScreen: View {
             allowsMultipleSelection: false
         ) { result in
             viewModel.handleFilePick(result: result)
+        }
+        .sheet(isPresented: $showPdfViewer) {
+            if let url = viewModel.selectedURL {
+                PDFViewer(url: url)
+            }
         }
         .overlay(alignment: .bottom) {
             if let msg = viewModel.toastMessage {
@@ -96,7 +102,28 @@ struct OfflineScannerScreen: View {
             // Card: only preview + close
             ZStack(alignment: .topTrailing) {
                 previewView
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if viewModel.fileType == .pdf {
+                            showPdfViewer = true
+                        }
+                    }
                 CloseButton(action: { viewModel.resetState() })
+                if viewModel.fileType == .pdf {
+                    Button(action: { showPdfViewer = true }) {
+                        Text(strings.openPdf)
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.accentColor)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(12)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                }
             }
             .background(Color(.systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 16))

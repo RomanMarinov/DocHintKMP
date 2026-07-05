@@ -137,13 +137,31 @@ class HousingBillParser {
             .find(text)?.groupValues?.get(1)
 
     private fun extractInstitution(text: String): String? {
-        UK_PATTERN.find(text)?.let { return normalizeOrg(it.value) }
-        val lines = text.lines().map { it.trim() }
+        val collapsedText = text.replace(Regex("""\s+"""), " ")
+        UK_PATTERN.find(collapsedText)?.let { return normalizeOrg(it.value) }
+
+        val lines = text.lines().map { it.trim() }.filter { it.isNotBlank() }
         return lines.firstOrNull { line ->
             line.contains("УПРАВЛЯЮЩАЯ КОМПАНИЯ", ignoreCase = true) ||
                 line.contains("УК ", ignoreCase = true) ||
+                line.contains("ООО УК", ignoreCase = true) ||
                 line.contains("""ООО "УК""", ignoreCase = true)
-        }?.let { normalizeOrg(it) }
+        }?.let { line ->
+            val nextLine = lines.getOrNull(lines.indexOf(line) + 1)
+            val combined = if (line.equals("ООО УК", ignoreCase = true) &&
+                !nextLine.isNullOrBlank() &&
+                !nextLine.contains("ИНН", ignoreCase = true) &&
+                !nextLine.contains("КПП", ignoreCase = true) &&
+                !nextLine.contains("Сумма", ignoreCase = true) &&
+                !nextLine.contains("Площадь", ignoreCase = true) &&
+                !nextLine.any { it.isDigit() }
+            ) {
+                "$line $nextLine"
+            } else {
+                line
+            }
+            normalizeOrg(combined)
+        }
     }
 
     private fun normalizeOrg(raw: String): String {

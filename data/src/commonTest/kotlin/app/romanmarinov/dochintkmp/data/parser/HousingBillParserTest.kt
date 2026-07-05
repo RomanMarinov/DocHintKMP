@@ -44,6 +44,23 @@ class HousingBillParserTest {
     }
 
     @Test
+    fun parse_extractsInstitutionWhenBrokenAcrossLines() {
+        val text = """
+            ПЛАТЕЖНЫЙ ДОКУМЕНТ № 202602_60ЕХ209700-10 ПО Л/С 0667000001
+            за ФЕВРАЛЬ - 2026 (расчетный период)
+            Адрес жилого помещения: Вологодская обл, г. Вологда, ул. Северная, д. 10б, кв. 1
+            ООО УК
+            "ФЛАГМАН" ИНН 3525307492
+            Сумма к оплате за расчетный период 3 625.82 рублей
+            Видеодомофон кварт 1 - 50 50.00 - - - - 50.00 0.00 50.00
+        """.trimIndent()
+
+        val result = parser.parse(text)
+
+        assertEquals("ООО УК \"ФЛАГМАН\"", result.institution)
+    }
+
+    @Test
     fun parse_capitalRepairBill_detectsCategory() {
         val text = """
             ПЛАТЕЖНЫЙ ДОКУМЕНТ № 202511_60ЕХ209700-11КР ПО Л/С 0667000001
