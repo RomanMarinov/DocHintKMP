@@ -1,28 +1,28 @@
 import SwiftUI
-import Shared
 
 struct ContentView: View {
-    @State private var showContent = false
     var body: some View {
-        VStack {
-            Button("Click me!") {
-                withAnimation {
-                    showContent = !showContent
+        TabView {
+            AIScannerScreen()
+                .tabItem {
+                    Label(String(localized: "tab_ai_scanner"), systemImage: "doc.text.viewfinder")
                 }
-            }
 
-            if showContent {
-                VStack(spacing: 16) {
-                    Image(systemName: "swift")
-                        .font(.system(size: 200))
-                        .foregroundColor(.accentColor)
-                    Text("SwiftUI: \(Greeting().greet())")
+            OfflineScannerScreen()
+                .tabItem {
+                    Label(String(localized: "tab_offline"), systemImage: "doc.text.viewfinder")
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
-            }
+
+            DocumentsScreen()
+                .tabItem {
+                    Label(String(localized: "tab_documents"), systemImage: "folder")
+                }
+
+            SettingsScreen()
+                .tabItem {
+                    Label(String(localized: "tab_settings"), systemImage: "gearshape")
+                }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .padding()
     }
 }
 

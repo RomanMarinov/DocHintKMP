@@ -1,0 +1,62 @@
+# Сборка и юнит-тесты при push/PR в указанные ветки.
+# Публичный репозиторий: минуты GitHub Actions бесплатны в лимите; отдельная подписка не нужна.
+
+name: CI
+
+on:
+  push:
+    branches: [main, master, dev]
+  pull_request:
+    branches: [main, master, dev]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android — сборка и unit-тесты
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', '**/*.gradle.kts', '**/libs.versions.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Сборка debug и androidApp unit tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :androidApp:assembleDebug :androidApp:testDebugUnitTest --no-daemon --build-cache
+
+  ios:
+    name: iOS — unit-тесты (симулятор)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # iPhone 16 + OS=latest не существует (16 только на iOS 18.x). На macos-latest — iPhone 17.
+      - name: Xcode test (iosAppTests)
+        working-directory: iosApp
+        run: |
+          xcodebuild test \
+            -scheme iosApp \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+            -only-testing:iosAppTests
