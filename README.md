@@ -135,3 +135,12 @@ xcodebuild test -workspace iosApp/iosApp.xcworkspace \
   -scheme iosAppTests \
   -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
+#### Демо
+
+**Android**
+
+https://github.com/user-attachments/assets/716182c5-eedc-450e-9b9f-ac675004633d
+
+**iOS**
+
+https://github.com/user-attachments/assets/b21f88ac-434c-49ac-9980-fb579c70126a
