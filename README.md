@@ -119,10 +119,6 @@ Workflow запускается автоматически при:
 | **Android** | `ubuntu-latest` | Сборка debug APK (`:androidApp:assembleDebug`), запуск unit-тестов (`:androidApp:testDebugUnitTest`) |
 | **iOS** | `macos-latest` | Запуск Swift-тестов (`xcodebuild test`) для таргета `iosAppTests` на симуляторе `iPhone 17` |
 
-### Статус сборки
-
-[![CI](https://github.com/your-username/doc-hint/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/doc-hint/actions/workflows/ci.yml)
-
 ### Локальный запуск CI-команд
 
 ```bash
