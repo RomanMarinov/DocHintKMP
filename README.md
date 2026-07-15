@@ -141,7 +141,7 @@ xcodebuild test -workspace iosApp/iosApp.xcworkspace \
   <tr>
     <td align="center" width="50%">
       <p><strong>Android</strong></p>
-      <video src="https://github.com/user-attachments/assets/716182c5-eedc-450e-9b9f-ac675004633d" controls width="100%"></video>
+      <video src="https://github.com/user-attachments/assets/b21f88ac-434c-49ac-9980-fb579c70126a" controls width="100%"></video>
     </td>
     <td align="center" width="50%">
       <p><strong>iOS</strong></p>
