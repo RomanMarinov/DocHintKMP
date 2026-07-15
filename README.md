@@ -135,3 +135,20 @@ xcodebuild test -workspace iosApp/iosApp.xcworkspace \
   -scheme iosAppTests \
   -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
+
+
+### 3. HTML `<video>` (works unevenly on GitHub)
+```markdown
+<video src="docs/videos/android-demo.mp4" controls width="600"></video>
+<video src="docs/videos/ios-demo.mp4" controls width="600"></video>
+
+
+#### Демо
+
+**Android**
+
+https://github.com/user-attachments/assets/716182c5-eedc-450e-9b9f-ac675004633d
+
+**iOS**
+
+https://github.com/user-attachments/assets/b21f88ac-434c-49ac-9980-fb579c70126a
