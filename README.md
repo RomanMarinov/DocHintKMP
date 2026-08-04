@@ -1,4 +1,4 @@
-# DocHint — Compose Multiplatform
+# DocHint — Kotlin Multiplatform
 
 [![Kotlinx Serialization](https://img.shields.io/badge/Kotlinx%20Serialization-1.10.0-00C853?style=flat-square)](https://github.com/Kotlin/kotlinx.serialization)
 [![Ktor Client](https://img.shields.io/badge/Ktor%20Client-3.0.3-087CFA?style=flat-square)](https://ktor.io/)
@@ -119,10 +119,6 @@ Workflow запускается автоматически при:
 | **Android** | `ubuntu-latest` | Сборка debug APK (`:androidApp:assembleDebug`), запуск unit-тестов (`:androidApp:testDebugUnitTest`) |
 | **iOS** | `macos-latest` | Запуск Swift-тестов (`xcodebuild test`) для таргета `iosAppTests` на симуляторе `iPhone 17` |
 
-### Статус сборки
-
-[![CI](https://github.com/your-username/doc-hint/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/doc-hint/actions/workflows/ci.yml)
-
 ### Локальный запуск CI-команд
 
 ```bash
@@ -135,3 +131,17 @@ xcodebuild test -workspace iosApp/iosApp.xcworkspace \
   -scheme iosAppTests \
   -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
+#### Демо
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <p><strong>Android</strong></p>
+      <video src="https://github.com/user-attachments/assets/b21f88ac-434c-49ac-9980-fb579c70126a" controls width="100%"></video>
+    </td>
+    <td align="center" width="50%">
+      <p><strong>iOS</strong></p>
+      <video src="https://github.com/user-attachments/assets/716182c5-eedc-450e-9b9f-ac675004633d" controls width="100%"></video>
+    </td>
+  </tr>
+</table>
