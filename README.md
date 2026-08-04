@@ -1,4 +1,4 @@
-# DocHint — Compose Multiplatform
+# DocHint — Kotlin Multiplatform
 
 [![Kotlinx Serialization](https://img.shields.io/badge/Kotlinx%20Serialization-1.10.0-00C853?style=flat-square)](https://github.com/Kotlin/kotlinx.serialization)
 [![Ktor Client](https://img.shields.io/badge/Ktor%20Client-3.0.3-087CFA?style=flat-square)](https://ktor.io/)
